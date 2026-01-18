@@ -218,13 +218,22 @@ body {
 }
 
 .sport-icon {
-  width: 64px;
-  height: 64px;
-  padding: 12px;
+  width: 72px;
+  height: 72px;
+  padding: 14px;
   background-color: var(--color-white);
   border: var(--border-width) solid var(--color-black);
   border-radius: 12px;
   box-shadow: 3px 3px 0 var(--color-black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sport-icon img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
 }
 
 /* Footer */

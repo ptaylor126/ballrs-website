@@ -461,6 +461,15 @@ body {
     justify-content: center;
   }
 
+  .btn-wrapper {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .btn-wrapper .btn {
+    max-width: none;
+  }
+
   .page-title {
     font-size: 32px;
   }

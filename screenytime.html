@@ -450,8 +450,11 @@
   const FRAME_Y = PADDING;
 
   const COVERUP_SCALE = 1.7;
-  const COVERUP_X = SCREEN_X + 55;
-  const COVERUP_Y = SCREEN_Y + 35;
+  const COVERUP_X = SCREEN_X + 35;
+  const COVERUP_Y = SCREEN_Y + 18;
+
+  // Output scale factor (how much of the 1080×1920 the phone fills)
+  const OUTPUT_PHONE_SCALE = 0.88;
 
   // --- Color Presets ---
   const PRESETS = [
@@ -748,6 +751,18 @@
     });
   }
 
+  // Scale render canvas to output canvas, preserving aspect ratio and centering
+  function scaleToOutput(outputCtx, renderCanvas, color) {
+    var scale = Math.min(OUTPUT_W / renderCanvas.width, OUTPUT_H / renderCanvas.height) * OUTPUT_PHONE_SCALE;
+    var dw = renderCanvas.width * scale;
+    var dh = renderCanvas.height * scale;
+    var dx = (OUTPUT_W - dw) / 2;
+    var dy = (OUTPUT_H - dh) / 2;
+    outputCtx.fillStyle = color;
+    outputCtx.fillRect(0, 0, OUTPUT_W, OUTPUT_H);
+    outputCtx.drawImage(renderCanvas, dx, dy, dw, dh);
+  }
+
   function getMediaRecorderOptions() {
     var types = [
       'video/mp4;codecs=avc1',
@@ -886,10 +901,9 @@
           return;
         }
 
-        // Render at full resolution
+        // Render at full resolution, then scale to output preserving aspect ratio
         renderFrame(renderCtx, video, deviceFrame, coverUp, color);
-        // Scale down to output canvas
-        outputCtx.drawImage(renderCanvas, 0, 0, OUTPUT_W, OUTPUT_H);
+        scaleToOutput(outputCtx, renderCanvas, color);
 
         frameCount++;
 
@@ -955,8 +969,8 @@
         }
 
         renderCtx.drawImage(ecVideo, drawX, drawY, drawW, drawH);
-        // Scale down to output
-        outputCtx.drawImage(renderCanvas, 0, 0, OUTPUT_W, OUTPUT_H);
+        // Scale to output preserving aspect ratio
+        scaleToOutput(outputCtx, renderCanvas, color);
 
         requestAnimationFrame(drawEndCardLoop);
       }

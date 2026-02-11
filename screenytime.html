@@ -386,6 +386,11 @@
     </div>
 
     <div class="settings-section">
+      <span class="section-label">Frame Color</span>
+      <div class="color-presets" id="frameColorOptions"></div>
+    </div>
+
+    <div class="settings-section">
       <label>Background Color</label>
       <div class="color-row">
         <div class="color-swatch" id="colorSwatch"></div>
@@ -440,30 +445,41 @@
   'use strict';
 
   // --- Device Profiles ---
-  // Each device defines its frame image dimensions and screen area at native resolution.
+  // Each type defines shared dimensions/layout. Variants are different frame colors.
   // renderScale upscales small frames so the internal canvas is always >= 1080×1920.
-  var DEVICES = {
+  var DEVICE_TYPES = {
     apple: {
-      frameImg: 'device-frame.png',
       frameW: 1310, frameH: 2710,
       screenWPct: 93, screenHPct: 98,
       cornerRadius: 175, padding: 80,
       coverUp: null,
       renderScale: 1,
+      variants: [
+        { name: 'Natural', img: 'device-frame-natural.png' },
+        { name: 'White', img: 'device-frame-white.png' },
+        { name: 'Black', img: 'device-frame-black.png' },
+        { name: 'Desert', img: 'device-frame-desert.png' },
+      ],
     },
     android: {
-      frameImg: 'device-frame-android.png',
-      frameW: 414, frameH: 896,
+      frameW: 353, frameH: 745,
       screenWPct: 96, screenHPct: 98,
-      cornerRadius: 70, padding: 20,
+      cornerRadius: 53, padding: 15,
       coverUp: null,
-      renderScale: 3,
+      renderScale: 4,
+      variants: [
+        { name: 'Obsidian', img: 'device-frame-android-obsidan.png' },
+        { name: 'Porcelain', img: 'device-frame-android-porcelain.png' },
+        { name: 'Pink Quartz', img: 'device-frame-android-pink-quartz.png' },
+        { name: 'Hazel', img: 'device-frame-android-hazel.png' },
+      ],
     },
   };
 
-  // Compute all derived layout values from a device profile
-  function getDeviceLayout(deviceKey) {
-    var d = DEVICES[deviceKey];
+  // Compute all derived layout values from device type + variant index
+  function getDeviceLayout(deviceType, variantIndex) {
+    var d = DEVICE_TYPES[deviceType];
+    var variant = d.variants[variantIndex || 0];
     var s = d.renderScale;
 
     var frameW = d.frameW * s;
@@ -484,9 +500,8 @@
     var frameX = padding;
     var frameY = padding;
 
-    var layout = {
-      deviceKey: deviceKey,
-      frameImg: d.frameImg,
+    return {
+      frameImg: variant.img,
       frameW: frameW, frameH: frameH,
       screenW: screenW, screenH: screenH,
       canvasW: canvasW, canvasH: canvasH,
@@ -495,17 +510,6 @@
       cornerRadius: cornerRadius,
       coverUp: null,
     };
-
-    if (d.coverUp) {
-      layout.coverUp = {
-        img: d.coverUp.img,
-        scale: d.coverUp.scale * s,
-        x: screenX + d.coverUp.offX * s,
-        y: screenY + d.coverUp.offY * s,
-      };
-    }
-
-    return layout;
   }
 
   // --- Output constants (Reels-ready) ---
@@ -540,6 +544,7 @@
   var colorInput = document.getElementById('colorInput');
   var colorPresets = document.getElementById('colorPresets');
   var deviceOptions = document.getElementById('deviceOptions');
+  var frameColorOptions = document.getElementById('frameColorOptions');
   var speedOptions = document.getElementById('speedOptions');
   var endcardDrop = document.getElementById('endcardDrop');
   var endcardInput = document.getElementById('endcardInput');
@@ -564,6 +569,7 @@
   var bgColor = '#F5F2EB';
   var speed = 1;
   var device = 'apple';
+  var frameVariant = 0;
   var processing = false;
   var resultBlob = null;
 
@@ -612,12 +618,36 @@
   });
 
   // --- Device selector ---
+  function buildFrameColorButtons(deviceType) {
+    frameColorOptions.innerHTML = '';
+    var variants = DEVICE_TYPES[deviceType].variants;
+    variants.forEach(function(v, i) {
+      var btn = document.createElement('button');
+      btn.className = 'color-preset';
+      btn.textContent = v.name;
+      btn.style.background = i === 0 ? '#1a1a1a' : '#fff';
+      btn.style.color = i === 0 ? '#fff' : '#1a1a1a';
+      btn.addEventListener('click', function() {
+        frameVariant = i;
+        frameColorOptions.querySelectorAll('.color-preset').forEach(function(b, j) {
+          b.style.background = j === i ? '#1a1a1a' : '#fff';
+          b.style.color = j === i ? '#fff' : '#1a1a1a';
+        });
+      });
+      frameColorOptions.appendChild(btn);
+    });
+  }
+
+  buildFrameColorButtons('apple');
+
   deviceOptions.addEventListener('click', function(e) {
     var btn = e.target.closest('.speed-option');
     if (!btn || !btn.dataset.device) return;
     deviceOptions.querySelectorAll('.speed-option').forEach(function(b) { b.classList.remove('active'); });
     btn.classList.add('active');
     device = btn.dataset.device;
+    frameVariant = 0;
+    buildFrameColorButtons(device);
   });
 
   // --- Speed ---
@@ -769,13 +799,13 @@
     try {
       if (inputMode === 'image') {
         progressContainer.style.display = 'none';
-        resultBlob = await processImage(imageFile, bgColor, device);
+        resultBlob = await processImage(imageFile, bgColor, device, frameVariant);
         processBtn.textContent = 'Download Image';
       } else {
         progressContainer.style.display = 'block';
         progressFill.style.width = '0%';
         progressText.textContent = 'Preparing...';
-        resultBlob = await processVideo(videoFile, bgColor, speed, device, endcardFile);
+        resultBlob = await processVideo(videoFile, bgColor, speed, device, frameVariant, endcardFile);
         processBtn.textContent = 'Download Video';
       }
       processBtn.classList.add('downloading');
@@ -838,12 +868,14 @@
     setColor('#F5F2EB');
     speed = 1;
     device = 'apple';
+    frameVariant = 0;
     speedOptions.querySelectorAll('.speed-option').forEach(function(b) {
       b.classList.toggle('active', b.dataset.speed === '1');
     });
     deviceOptions.querySelectorAll('.speed-option').forEach(function(b) {
       b.classList.toggle('active', b.dataset.device === 'apple');
     });
+    buildFrameColorButtons('apple');
   });
 
   // --- Helpers ---
@@ -956,8 +988,8 @@
   }
 
   // --- Process image (single frame → PNG) ---
-  async function processImage(imgFile, color, deviceKey) {
-    var layout = getDeviceLayout(deviceKey);
+  async function processImage(imgFile, color, deviceKey, variantIdx) {
+    var layout = getDeviceLayout(deviceKey, variantIdx);
 
     var renderCanvas = document.createElement('canvas');
     renderCanvas.width = layout.canvasW;
@@ -1045,8 +1077,8 @@
   }
 
   // --- Main processing (two-canvas approach) ---
-  async function processVideo(vFile, color, spd, deviceKey, ecFile) {
-    var layout = getDeviceLayout(deviceKey);
+  async function processVideo(vFile, color, spd, deviceKey, variantIdx, ecFile) {
+    var layout = getDeviceLayout(deviceKey, variantIdx);
 
     // Internal canvas: full resolution for quality compositing
     var renderCanvas = document.createElement('canvas');

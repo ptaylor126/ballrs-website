@@ -433,7 +433,7 @@
   const FRAME_H = 2710;
   const SCREEN_W_PERCENT = 93;
   const SCREEN_H_PERCENT = 98;
-  const CORNER_RADIUS = 120;
+  const CORNER_RADIUS = 55;
   const PADDING = 80;
 
   let SCREEN_W = Math.floor(FRAME_W * SCREEN_W_PERCENT / 100);
@@ -449,9 +449,9 @@
   const FRAME_X = PADDING;
   const FRAME_Y = PADDING;
 
-  const COVERUP_SCALE = 1.53;
-  const COVERUP_X = SCREEN_X + 80;
-  const COVERUP_Y = SCREEN_Y + 40;
+  const COVERUP_SCALE = 2.0;
+  const COVERUP_X = SCREEN_X + 10;
+  const COVERUP_Y = SCREEN_Y + 5;
 
   // --- Color Presets ---
   const PRESETS = [
@@ -818,13 +818,25 @@
     ctx.drawImage(coverUpImg, COVERUP_X, COVERUP_Y, coverW, coverH);
   }
 
-  // --- Main processing ---
+  // --- Output constants (Reels-ready) ---
+  const OUTPUT_W = 1080;
+  const OUTPUT_H = 1920;
+
+  // --- Main processing (two-canvas approach) ---
+  // Render at full resolution on an internal canvas, then scale down
+  // to 1080×1920 on the output canvas that MediaRecorder captures.
   async function processVideo(vFile, color, spd, ecFile) {
-    // Create offscreen canvas
-    var canvas = document.createElement('canvas');
-    canvas.width = CANVAS_W;
-    canvas.height = CANVAS_H;
-    var ctx = canvas.getContext('2d');
+    // Internal canvas: full resolution for quality compositing
+    var renderCanvas = document.createElement('canvas');
+    renderCanvas.width = CANVAS_W;
+    renderCanvas.height = CANVAS_H;
+    var renderCtx = renderCanvas.getContext('2d');
+
+    // Output canvas: 1080×1920 for MediaRecorder capture
+    var outputCanvas = document.createElement('canvas');
+    outputCanvas.width = OUTPUT_W;
+    outputCanvas.height = OUTPUT_H;
+    var outputCtx = outputCanvas.getContext('2d');
 
     // Load assets
     var deviceFrame = await loadImage('device-frame.png');
@@ -841,8 +853,8 @@
     var duration = video.duration;
     var totalFrames = Math.ceil((duration / spd) * fps);
 
-    // Set up MediaRecorder
-    var stream = canvas.captureStream(fps);
+    // MediaRecorder captures from the scaled output canvas
+    var stream = outputCanvas.captureStream(fps);
     var opts = getMediaRecorderOptions();
     var mediaRecorder = new MediaRecorder(stream, opts);
     var chunks = [];
@@ -850,7 +862,7 @@
       if (e.data && e.data.size > 0) chunks.push(e.data);
     };
 
-    mediaRecorder.start(100); // collect data every 100ms
+    mediaRecorder.start(100);
 
     // Play video at speed
     video.playbackRate = spd;
@@ -864,7 +876,7 @@
       function drawLoop() {
         if (video.ended || video.paused) {
           if (ecFile) {
-            renderEndCard(ecFile, canvas, ctx, color, mediaRecorder, chunks).then(resolveMain);
+            renderEndCard(ecFile, renderCanvas, renderCtx, outputCanvas, outputCtx, color, mediaRecorder).then(resolveMain);
           } else {
             mediaRecorder.stop();
             resolveMain();
@@ -872,10 +884,13 @@
           return;
         }
 
-        renderFrame(ctx, video, deviceFrame, coverUp, color);
+        // Render at full resolution
+        renderFrame(renderCtx, video, deviceFrame, coverUp, color);
+        // Scale down to output canvas
+        outputCtx.drawImage(renderCanvas, 0, 0, OUTPUT_W, OUTPUT_H);
+
         frameCount++;
 
-        // Update progress
         var pct = Math.min(100, Math.round((frameCount / totalFrames) * 100));
         progressFill.style.width = pct + '%';
         progressText.textContent = 'Processing frame ' + frameCount + ' of ~' + totalFrames;
@@ -901,7 +916,7 @@
   }
 
   // --- End card ---
-  async function renderEndCard(ecFile, canvas, ctx, color, mediaRecorder, chunks) {
+  async function renderEndCard(ecFile, renderCanvas, renderCtx, outputCanvas, outputCtx, color, mediaRecorder) {
     var ecVideo = document.createElement('video');
     ecVideo.src = URL.createObjectURL(ecFile);
     ecVideo.muted = true;
@@ -917,28 +932,30 @@
           return;
         }
 
-        // Fill background
-        ctx.fillStyle = color;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // Render end card at full resolution
+        renderCtx.fillStyle = color;
+        renderCtx.fillRect(0, 0, renderCanvas.width, renderCanvas.height);
 
-        // Scale end card to fit canvas
         var ecAspect = ecVideo.videoWidth / ecVideo.videoHeight;
-        var canvasAspect = canvas.width / canvas.height;
+        var canvasAspect = renderCanvas.width / renderCanvas.height;
         var drawW, drawH, drawX, drawY;
 
         if (ecAspect > canvasAspect) {
-          drawW = canvas.width;
-          drawH = canvas.width / ecAspect;
+          drawW = renderCanvas.width;
+          drawH = renderCanvas.width / ecAspect;
           drawX = 0;
-          drawY = (canvas.height - drawH) / 2;
+          drawY = (renderCanvas.height - drawH) / 2;
         } else {
-          drawH = canvas.height;
-          drawW = canvas.height * ecAspect;
-          drawX = (canvas.width - drawW) / 2;
+          drawH = renderCanvas.height;
+          drawW = renderCanvas.height * ecAspect;
+          drawX = (renderCanvas.width - drawW) / 2;
           drawY = 0;
         }
 
-        ctx.drawImage(ecVideo, drawX, drawY, drawW, drawH);
+        renderCtx.drawImage(ecVideo, drawX, drawY, drawW, drawH);
+        // Scale down to output
+        outputCtx.drawImage(renderCanvas, 0, 0, OUTPUT_W, OUTPUT_H);
+
         requestAnimationFrame(drawEndCardLoop);
       }
       drawEndCardLoop();

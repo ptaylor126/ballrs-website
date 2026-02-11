@@ -451,8 +451,8 @@
     android: {
       frameImg: 'device-frame-android.png',
       frameW: 414, frameH: 896,
-      screenWPct: 93, screenHPct: 96,
-      cornerRadius: 38, padding: 20,
+      screenWPct: 88, screenHPct: 93,
+      cornerRadius: 48, padding: 20,
       coverUp: null,
       renderScale: 3,
     },
@@ -997,6 +997,7 @@
   }
 
   // --- End card ---
+  // Renders directly to the output canvas at full 1080×1920 (no device frame, no intermediate scaling)
   async function renderEndCard(ecFile, renderCanvas, renderCtx, outputCanvas, outputCtx, color, mediaRecorder) {
     var ecVideo = document.createElement('video');
     ecVideo.src = URL.createObjectURL(ecFile);
@@ -1013,28 +1014,27 @@
           return;
         }
 
-        renderCtx.fillStyle = color;
-        renderCtx.fillRect(0, 0, renderCanvas.width, renderCanvas.height);
+        // Draw directly to output canvas at full 1080×1920
+        outputCtx.fillStyle = color;
+        outputCtx.fillRect(0, 0, OUTPUT_W, OUTPUT_H);
 
         var ecAspect = ecVideo.videoWidth / ecVideo.videoHeight;
-        var canvasAspect = renderCanvas.width / renderCanvas.height;
+        var outAspect = OUTPUT_W / OUTPUT_H;
         var drawW, drawH, drawX, drawY;
 
-        if (ecAspect > canvasAspect) {
-          drawW = renderCanvas.width;
-          drawH = renderCanvas.width / ecAspect;
+        if (ecAspect > outAspect) {
+          drawW = OUTPUT_W;
+          drawH = OUTPUT_W / ecAspect;
           drawX = 0;
-          drawY = (renderCanvas.height - drawH) / 2;
+          drawY = (OUTPUT_H - drawH) / 2;
         } else {
-          drawH = renderCanvas.height;
-          drawW = renderCanvas.height * ecAspect;
-          drawX = (renderCanvas.width - drawW) / 2;
+          drawH = OUTPUT_H;
+          drawW = OUTPUT_H * ecAspect;
+          drawX = (OUTPUT_W - drawW) / 2;
           drawY = 0;
         }
 
-        renderCtx.drawImage(ecVideo, drawX, drawY, drawW, drawH);
-        scaleToOutput(outputCtx, renderCanvas, color);
-
+        outputCtx.drawImage(ecVideo, drawX, drawY, drawW, drawH);
         requestAnimationFrame(drawEndCardLoop);
       }
       drawEndCardLoop();

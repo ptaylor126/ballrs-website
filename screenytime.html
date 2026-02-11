@@ -94,7 +94,7 @@
       display: none;
     }
 
-    .preview-video {
+    .preview-video, .preview-image {
       display: none;
       margin-top: 16px;
       width: 100%;
@@ -360,10 +360,10 @@
 
   <!-- Section 1: Upload -->
   <div class="drop-zone" id="dropZone">
-    <div class="drop-zone-label">Drag & drop screen recording here<br>or click to browse</div>
-    <div class="drop-zone-hint">Accepts MP4, MOV</div>
+    <div class="drop-zone-label">Drag & drop screen recording or image<br>or click to browse</div>
+    <div class="drop-zone-hint">Accepts MP4, MOV, PNG, JPG</div>
   </div>
-  <input type="file" id="fileInput" accept="video/mp4,video/quicktime,.mp4,.mov" hidden>
+  <input type="file" id="fileInput" accept="video/mp4,video/quicktime,.mp4,.mov,image/png,image/jpeg,.png,.jpg,.jpeg" hidden>
 
   <div class="file-info" id="fileInfo">
     <span class="filename" id="fileName"></span>
@@ -371,6 +371,7 @@
   </div>
   <div class="file-warning" id="fileWarning">This file is very large and may take a while to process.</div>
   <video class="preview-video" id="previewVideo" muted controls playsinline></video>
+  <img class="preview-image" id="previewImage">
 
   <!-- Section 2: Settings -->
   <div class="settings" id="settings">
@@ -393,24 +394,26 @@
       <div class="color-presets" id="colorPresets"></div>
     </div>
 
-    <div class="settings-section">
-      <span class="section-label">Speed</span>
-      <div class="speed-options" id="speedOptions">
-        <button class="speed-option active" data-speed="1">1x</button>
-        <button class="speed-option" data-speed="1.5">1.5x</button>
-        <button class="speed-option" data-speed="2">2x</button>
+    <div id="videoOnlySettings">
+      <div class="settings-section">
+        <span class="section-label">Speed</span>
+        <div class="speed-options" id="speedOptions">
+          <button class="speed-option active" data-speed="1">1x</button>
+          <button class="speed-option" data-speed="1.5">1.5x</button>
+          <button class="speed-option" data-speed="2">2x</button>
+        </div>
       </div>
-    </div>
 
-    <div class="settings-section">
-      <span class="section-label">End Card (Optional)</span>
-      <div class="endcard-drop" id="endcardDrop">Add end card video (MP4)</div>
-      <input type="file" id="endcardInput" accept="video/mp4,.mp4" hidden>
-      <div class="endcard-info" id="endcardInfo">
-        <span class="filename" id="endcardName"></span>
-        <button class="remove-btn" id="removeEndcard">Remove</button>
+      <div class="settings-section">
+        <span class="section-label">End Card (Optional)</span>
+        <div class="endcard-drop" id="endcardDrop">Add end card video (MP4)</div>
+        <input type="file" id="endcardInput" accept="video/mp4,.mp4" hidden>
+        <div class="endcard-info" id="endcardInfo">
+          <span class="filename" id="endcardName"></span>
+          <button class="remove-btn" id="removeEndcard">Remove</button>
+        </div>
+        <div class="endcard-note">End card will be scaled to match and appended to the end of the video</div>
       </div>
-      <div class="endcard-note">End card will be scaled to match and appended to the end of the video</div>
     </div>
   </div>
 
@@ -530,6 +533,8 @@
   var fileSize = document.getElementById('fileSize');
   var fileWarning = document.getElementById('fileWarning');
   var previewVideo = document.getElementById('previewVideo');
+  var previewImage = document.getElementById('previewImage');
+  var videoOnlySettings = document.getElementById('videoOnlySettings');
   var settings = document.getElementById('settings');
   var colorSwatch = document.getElementById('colorSwatch');
   var colorInput = document.getElementById('colorInput');
@@ -553,6 +558,8 @@
 
   // --- State ---
   var videoFile = null;
+  var imageFile = null;
+  var inputMode = null; // 'video' or 'image'
   var endcardFile = null;
   var bgColor = '#F5F2EB';
   var speed = 1;
@@ -622,27 +629,43 @@
     speed = parseFloat(btn.dataset.speed);
   });
 
-  // --- File upload (main video) ---
+  // --- File upload (video or image) ---
   dropZone.addEventListener('click', function() { fileInput.click(); });
   dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.classList.add('dragover'); });
   dropZone.addEventListener('dragleave', function() { dropZone.classList.remove('dragover'); });
   dropZone.addEventListener('drop', function(e) {
     e.preventDefault();
     dropZone.classList.remove('dragover');
-    if (e.dataTransfer.files.length) handleVideoFile(e.dataTransfer.files[0]);
+    if (e.dataTransfer.files.length) handleUpload(e.dataTransfer.files[0]);
   });
   fileInput.addEventListener('change', function() {
-    if (fileInput.files.length) handleVideoFile(fileInput.files[0]);
+    if (fileInput.files.length) handleUpload(fileInput.files[0]);
   });
 
-  function handleVideoFile(file) {
+  function isImageFile(file) {
+    return file.type.match(/^image\/(png|jpeg|jpg)$/i) || file.name.match(/\.(png|jpe?g)$/i);
+  }
+
+  function isVideoFile(file) {
     var validTypes = ['video/mp4', 'video/quicktime'];
-    if (!validTypes.includes(file.type) && !file.name.match(/\.(mp4|mov)$/i)) {
-      showError('Only MP4 and MOV files are supported.');
-      return;
+    return validTypes.includes(file.type) || file.name.match(/\.(mp4|mov)$/i);
+  }
+
+  function handleUpload(file) {
+    if (isImageFile(file)) {
+      handleImageFile(file);
+    } else if (isVideoFile(file)) {
+      handleVideoFile(file);
+    } else {
+      showError('Only MP4, MOV, PNG, and JPG files are supported.');
     }
+  }
+
+  function handleVideoFile(file) {
     hideError();
     videoFile = file;
+    imageFile = null;
+    inputMode = 'video';
     fileName.textContent = file.name;
     fileSize.textContent = '(' + formatSize(file.size) + ')';
     fileInfo.style.display = 'block';
@@ -656,7 +679,32 @@
     var url = URL.createObjectURL(file);
     previewVideo.src = url;
     previewVideo.style.display = 'block';
+    previewImage.style.display = 'none';
 
+    videoOnlySettings.style.display = 'block';
+    processBtn.textContent = 'Create Video';
+    settings.style.display = 'block';
+    processSection.style.display = 'block';
+    updateProcessBtn();
+  }
+
+  function handleImageFile(file) {
+    hideError();
+    imageFile = file;
+    videoFile = null;
+    inputMode = 'image';
+    fileName.textContent = file.name;
+    fileSize.textContent = '(' + formatSize(file.size) + ')';
+    fileInfo.style.display = 'block';
+    fileWarning.style.display = 'none';
+
+    var url = URL.createObjectURL(file);
+    previewImage.src = url;
+    previewImage.style.display = 'block';
+    previewVideo.style.display = 'none';
+
+    videoOnlySettings.style.display = 'none';
+    processBtn.textContent = 'Create Image';
     settings.style.display = 'block';
     processSection.style.display = 'block';
     updateProcessBtn();
@@ -696,7 +744,8 @@
 
   // --- Process button state ---
   function updateProcessBtn() {
-    var ready = videoFile && /^#[0-9A-Fa-f]{6}$/.test(bgColor);
+    var hasInput = videoFile || imageFile;
+    var ready = hasInput && /^#[0-9A-Fa-f]{6}$/.test(bgColor);
     processBtn.disabled = !ready;
   }
 
@@ -715,22 +764,28 @@
     hideError();
     processBtn.textContent = 'Processing...';
     processBtn.disabled = true;
-    progressContainer.style.display = 'block';
-    progressFill.style.width = '0%';
-    progressText.textContent = 'Preparing...';
     resetLink.style.display = 'none';
 
     try {
-      resultBlob = await processVideo(videoFile, bgColor, speed, device, endcardFile);
-      processBtn.textContent = 'Download Video';
+      if (inputMode === 'image') {
+        progressContainer.style.display = 'none';
+        resultBlob = await processImage(imageFile, bgColor, device);
+        processBtn.textContent = 'Download Image';
+      } else {
+        progressContainer.style.display = 'block';
+        progressFill.style.width = '0%';
+        progressText.textContent = 'Preparing...';
+        resultBlob = await processVideo(videoFile, bgColor, speed, device, endcardFile);
+        processBtn.textContent = 'Download Video';
+      }
       processBtn.classList.add('downloading');
       processBtn.disabled = false;
       progressContainer.style.display = 'none';
       resetLink.style.display = 'block';
     } catch (err) {
       console.error(err);
-      showError('Something went wrong during processing. Try a different video or refresh.');
-      processBtn.textContent = 'Create Video';
+      showError('Something went wrong during processing. Try a different file or refresh.');
+      processBtn.textContent = inputMode === 'image' ? 'Create Image' : 'Create Video';
       processBtn.disabled = false;
       progressContainer.style.display = 'none';
     }
@@ -739,8 +794,9 @@
 
   function downloadResult() {
     if (!resultBlob) return;
-    var ext = resultBlob.type.includes('mp4') ? 'mp4' : 'webm';
-    var baseName = videoFile.name.replace(/\.[^.]+$/, '');
+    var ext = resultBlob.type.includes('png') ? 'png' : resultBlob.type.includes('mp4') ? 'mp4' : 'webm';
+    var srcFile = videoFile || imageFile;
+    var baseName = srcFile.name.replace(/\.[^.]+$/, '');
     var a = document.createElement('a');
     a.href = URL.createObjectURL(resultBlob);
     a.download = baseName + '-framed.' + ext;
@@ -753,6 +809,8 @@
   // --- Reset ---
   resetBtn.addEventListener('click', function() {
     videoFile = null;
+    imageFile = null;
+    inputMode = null;
     endcardFile = null;
     resultBlob = null;
     processing = false;
@@ -763,6 +821,9 @@
     fileWarning.style.display = 'none';
     previewVideo.style.display = 'none';
     previewVideo.src = '';
+    previewImage.style.display = 'none';
+    previewImage.src = '';
+    videoOnlySettings.style.display = 'block';
     settings.style.display = 'none';
     processSection.style.display = 'none';
     progressContainer.style.display = 'none';
@@ -844,6 +905,85 @@
       }
     }
     return { videoBitsPerSecond: 16000000 };
+  }
+
+  // --- Render image frame (same compositing as video, but for a static Image element) ---
+  function renderImageFrame(ctx, imgElement, deviceFrameImg, coverUpImg, color, layout) {
+    var canvas = ctx.canvas;
+    ctx.fillStyle = color;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.save();
+    var x = layout.screenX, y = layout.screenY;
+    var w = layout.screenW, h = layout.screenH;
+    var r = layout.cornerRadius;
+
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+    ctx.clip();
+
+    var imgAspect = imgElement.naturalWidth / imgElement.naturalHeight;
+    var screenAspect = w / h;
+    var drawW, drawH, drawX, drawY;
+
+    if (imgAspect > screenAspect) {
+      drawH = h; drawW = h * imgAspect;
+      drawX = x + (w - drawW) / 2; drawY = y;
+    } else {
+      drawW = w; drawH = w / imgAspect;
+      drawX = x; drawY = y + (h - drawH) / 2;
+    }
+
+    ctx.drawImage(imgElement, drawX, drawY, drawW, drawH);
+    ctx.restore();
+
+    ctx.drawImage(deviceFrameImg, layout.frameX, layout.frameY, layout.frameW, layout.frameH);
+
+    if (layout.coverUp && coverUpImg) {
+      var coverW = coverUpImg.naturalWidth * layout.coverUp.scale;
+      var coverH = coverUpImg.naturalHeight * layout.coverUp.scale;
+      ctx.drawImage(coverUpImg, layout.coverUp.x, layout.coverUp.y, coverW, coverH);
+    }
+  }
+
+  // --- Process image (single frame → PNG) ---
+  async function processImage(imgFile, color, deviceKey) {
+    var layout = getDeviceLayout(deviceKey);
+
+    var renderCanvas = document.createElement('canvas');
+    renderCanvas.width = layout.canvasW;
+    renderCanvas.height = layout.canvasH;
+    var renderCtx = renderCanvas.getContext('2d');
+
+    var outputCanvas = document.createElement('canvas');
+    outputCanvas.width = OUTPUT_W;
+    outputCanvas.height = OUTPUT_H;
+    var outputCtx = outputCanvas.getContext('2d');
+    outputCtx.imageSmoothingEnabled = true;
+    outputCtx.imageSmoothingQuality = 'high';
+
+    var deviceFrame = await loadImage(layout.frameImg);
+    var coverUpImg = layout.coverUp ? await loadImage(layout.coverUp.img) : null;
+
+    var img = await loadImage(URL.createObjectURL(imgFile));
+
+    renderImageFrame(renderCtx, img, deviceFrame, coverUpImg, color, layout);
+    scaleToOutput(outputCtx, renderCanvas, color);
+
+    URL.revokeObjectURL(img.src);
+
+    return new Promise(function(resolve) {
+      outputCanvas.toBlob(function(blob) { resolve(blob); }, 'image/png');
+    });
   }
 
   // --- Render frame (device-agnostic) ---

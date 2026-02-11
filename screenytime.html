@@ -377,6 +377,14 @@
     <hr>
 
     <div class="settings-section">
+      <span class="section-label">Device</span>
+      <div class="speed-options" id="deviceOptions">
+        <button class="speed-option active" data-device="apple">Apple</button>
+        <button class="speed-option" data-device="android">Android</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
       <label>Background Color</label>
       <div class="color-row">
         <div class="color-swatch" id="colorSwatch"></div>
@@ -428,36 +436,82 @@
 (function() {
   'use strict';
 
-  // --- Layout Constants ---
-  const FRAME_W = 1310;
-  const FRAME_H = 2710;
-  const SCREEN_W_PERCENT = 93;
-  const SCREEN_H_PERCENT = 98;
-  const CORNER_RADIUS = 175;
-  const PADDING = 80;
+  // --- Device Profiles ---
+  // Each device defines its frame image dimensions and screen area at native resolution.
+  // renderScale upscales small frames so the internal canvas is always >= 1080×1920.
+  var DEVICES = {
+    apple: {
+      frameImg: 'device-frame.png',
+      frameW: 1310, frameH: 2710,
+      screenWPct: 93, screenHPct: 98,
+      cornerRadius: 175, padding: 80,
+      coverUp: { img: 'cover-up.png', scale: 1.7, offX: 18, offY: 8 },
+      renderScale: 1,
+    },
+    android: {
+      frameImg: 'device-frame-android.png',
+      frameW: 414, frameH: 896,
+      screenWPct: 93, screenHPct: 96,
+      cornerRadius: 38, padding: 20,
+      coverUp: null,
+      renderScale: 3,
+    },
+  };
 
-  let SCREEN_W = Math.floor(FRAME_W * SCREEN_W_PERCENT / 100);
-  let SCREEN_H = Math.floor(FRAME_H * SCREEN_H_PERCENT / 100);
-  SCREEN_W = Math.floor(SCREEN_W / 2) * 2;
-  SCREEN_H = Math.floor(SCREEN_H / 2) * 2;
+  // Compute all derived layout values from a device profile
+  function getDeviceLayout(deviceKey) {
+    var d = DEVICES[deviceKey];
+    var s = d.renderScale;
 
-  const CANVAS_W = Math.floor((FRAME_W + PADDING * 2) / 2) * 2;
-  const CANVAS_H = Math.floor((FRAME_H + PADDING * 2) / 2) * 2;
+    var frameW = d.frameW * s;
+    var frameH = d.frameH * s;
+    var padding = d.padding * s;
+    var cornerRadius = d.cornerRadius * s;
 
-  const SCREEN_X = Math.floor((FRAME_W - SCREEN_W) / 2) + PADDING;
-  const SCREEN_Y = Math.floor((FRAME_H - SCREEN_H) / 2) + PADDING;
-  const FRAME_X = PADDING;
-  const FRAME_Y = PADDING;
+    var screenW = Math.floor(frameW * d.screenWPct / 100);
+    var screenH = Math.floor(frameH * d.screenHPct / 100);
+    screenW = Math.floor(screenW / 2) * 2;
+    screenH = Math.floor(screenH / 2) * 2;
 
-  const COVERUP_SCALE = 1.7;
-  const COVERUP_X = SCREEN_X + 18;
-  const COVERUP_Y = SCREEN_Y + 8;
+    var canvasW = Math.floor((frameW + padding * 2) / 2) * 2;
+    var canvasH = Math.floor((frameH + padding * 2) / 2) * 2;
 
-  // Output scale factor (how much of the 1080×1920 the phone fills)
-  const OUTPUT_PHONE_SCALE = 0.88;
+    var screenX = Math.floor((frameW - screenW) / 2) + padding;
+    var screenY = Math.floor((frameH - screenH) / 2) + padding;
+    var frameX = padding;
+    var frameY = padding;
+
+    var layout = {
+      deviceKey: deviceKey,
+      frameImg: d.frameImg,
+      frameW: frameW, frameH: frameH,
+      screenW: screenW, screenH: screenH,
+      canvasW: canvasW, canvasH: canvasH,
+      screenX: screenX, screenY: screenY,
+      frameX: frameX, frameY: frameY,
+      cornerRadius: cornerRadius,
+      coverUp: null,
+    };
+
+    if (d.coverUp) {
+      layout.coverUp = {
+        img: d.coverUp.img,
+        scale: d.coverUp.scale * s,
+        x: screenX + d.coverUp.offX * s,
+        y: screenY + d.coverUp.offY * s,
+      };
+    }
+
+    return layout;
+  }
+
+  // --- Output constants (Reels-ready) ---
+  var OUTPUT_W = 1080;
+  var OUTPUT_H = 1920;
+  var OUTPUT_PHONE_SCALE = 0.88;
 
   // --- Color Presets ---
-  const PRESETS = [
+  var PRESETS = [
     { name: 'Cream',  hex: '#F5F2EB', dark: false },
     { name: 'Teal',   hex: '#1ABC9C', dark: true  },
     { name: 'Yellow', hex: '#F2C94C', dark: false },
@@ -469,40 +523,42 @@
   ];
 
   // --- DOM refs ---
-  const dropZone = document.getElementById('dropZone');
-  const fileInput = document.getElementById('fileInput');
-  const fileInfo = document.getElementById('fileInfo');
-  const fileName = document.getElementById('fileName');
-  const fileSize = document.getElementById('fileSize');
-  const fileWarning = document.getElementById('fileWarning');
-  const previewVideo = document.getElementById('previewVideo');
-  const settings = document.getElementById('settings');
-  const colorSwatch = document.getElementById('colorSwatch');
-  const colorInput = document.getElementById('colorInput');
-  const colorPresets = document.getElementById('colorPresets');
-  const speedOptions = document.getElementById('speedOptions');
-  const endcardDrop = document.getElementById('endcardDrop');
-  const endcardInput = document.getElementById('endcardInput');
-  const endcardInfo = document.getElementById('endcardInfo');
-  const endcardName = document.getElementById('endcardName');
-  const removeEndcard = document.getElementById('removeEndcard');
-  const processSection = document.getElementById('processSection');
-  const processBtn = document.getElementById('processBtn');
-  const progressContainer = document.getElementById('progressContainer');
-  const progressFill = document.getElementById('progressFill');
-  const progressText = document.getElementById('progressText');
-  const errorMessage = document.getElementById('errorMessage');
-  const resetLink = document.getElementById('resetLink');
-  const resetBtn = document.getElementById('resetBtn');
-  const browserWarning = document.getElementById('browserWarning');
+  var dropZone = document.getElementById('dropZone');
+  var fileInput = document.getElementById('fileInput');
+  var fileInfo = document.getElementById('fileInfo');
+  var fileName = document.getElementById('fileName');
+  var fileSize = document.getElementById('fileSize');
+  var fileWarning = document.getElementById('fileWarning');
+  var previewVideo = document.getElementById('previewVideo');
+  var settings = document.getElementById('settings');
+  var colorSwatch = document.getElementById('colorSwatch');
+  var colorInput = document.getElementById('colorInput');
+  var colorPresets = document.getElementById('colorPresets');
+  var deviceOptions = document.getElementById('deviceOptions');
+  var speedOptions = document.getElementById('speedOptions');
+  var endcardDrop = document.getElementById('endcardDrop');
+  var endcardInput = document.getElementById('endcardInput');
+  var endcardInfo = document.getElementById('endcardInfo');
+  var endcardName = document.getElementById('endcardName');
+  var removeEndcard = document.getElementById('removeEndcard');
+  var processSection = document.getElementById('processSection');
+  var processBtn = document.getElementById('processBtn');
+  var progressContainer = document.getElementById('progressContainer');
+  var progressFill = document.getElementById('progressFill');
+  var progressText = document.getElementById('progressText');
+  var errorMessage = document.getElementById('errorMessage');
+  var resetLink = document.getElementById('resetLink');
+  var resetBtn = document.getElementById('resetBtn');
+  var browserWarning = document.getElementById('browserWarning');
 
   // --- State ---
-  let videoFile = null;
-  let endcardFile = null;
-  let bgColor = '#F5F2EB';
-  let speed = 1;
-  let processing = false;
-  let resultBlob = null;
+  var videoFile = null;
+  var endcardFile = null;
+  var bgColor = '#F5F2EB';
+  var speed = 1;
+  var device = 'apple';
+  var processing = false;
+  var resultBlob = null;
 
   // --- Browser check ---
   (function checkBrowser() {
@@ -511,7 +567,7 @@
       browserWarning.style.display = 'block';
       return;
     }
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     if (isSafari) {
       browserWarning.textContent = 'For best results, use Chrome or Edge. Safari has limited video recording support.';
       browserWarning.style.display = 'block';
@@ -520,7 +576,7 @@
 
   // --- Color presets ---
   PRESETS.forEach(function(p) {
-    const btn = document.createElement('button');
+    var btn = document.createElement('button');
     btn.className = 'color-preset';
     btn.textContent = p.name;
     btn.style.background = p.hex;
@@ -541,17 +597,26 @@
   setColor('#F5F2EB');
 
   colorInput.addEventListener('input', function() {
-    let v = colorInput.value.trim();
+    var v = colorInput.value.trim();
     if (v && v[0] !== '#') v = '#' + v;
     if (/^#[0-9A-Fa-f]{6}$/.test(v)) {
       setColor(v);
     }
   });
 
+  // --- Device selector ---
+  deviceOptions.addEventListener('click', function(e) {
+    var btn = e.target.closest('.speed-option');
+    if (!btn || !btn.dataset.device) return;
+    deviceOptions.querySelectorAll('.speed-option').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    device = btn.dataset.device;
+  });
+
   // --- Speed ---
   speedOptions.addEventListener('click', function(e) {
-    const btn = e.target.closest('.speed-option');
-    if (!btn) return;
+    var btn = e.target.closest('.speed-option');
+    if (!btn || !btn.dataset.speed) return;
     speedOptions.querySelectorAll('.speed-option').forEach(function(b) { b.classList.remove('active'); });
     btn.classList.add('active');
     speed = parseFloat(btn.dataset.speed);
@@ -571,7 +636,7 @@
   });
 
   function handleVideoFile(file) {
-    const validTypes = ['video/mp4', 'video/quicktime'];
+    var validTypes = ['video/mp4', 'video/quicktime'];
     if (!validTypes.includes(file.type) && !file.name.match(/\.(mp4|mov)$/i)) {
       showError('Only MP4 and MOV files are supported.');
       return;
@@ -588,12 +653,10 @@
       fileWarning.style.display = 'none';
     }
 
-    // Preview
-    const url = URL.createObjectURL(file);
+    var url = URL.createObjectURL(file);
     previewVideo.src = url;
     previewVideo.style.display = 'block';
 
-    // Show settings & process
     settings.style.display = 'block';
     processSection.style.display = 'block';
     updateProcessBtn();
@@ -633,7 +696,7 @@
 
   // --- Process button state ---
   function updateProcessBtn() {
-    const ready = videoFile && /^#[0-9A-Fa-f]{6}$/.test(bgColor);
+    var ready = videoFile && /^#[0-9A-Fa-f]{6}$/.test(bgColor);
     processBtn.disabled = !ready;
   }
 
@@ -658,7 +721,7 @@
     resetLink.style.display = 'none';
 
     try {
-      resultBlob = await processVideo(videoFile, bgColor, speed, endcardFile);
+      resultBlob = await processVideo(videoFile, bgColor, speed, device, endcardFile);
       processBtn.textContent = 'Download Video';
       processBtn.classList.add('downloading');
       processBtn.disabled = false;
@@ -676,9 +739,9 @@
 
   function downloadResult() {
     if (!resultBlob) return;
-    const ext = resultBlob.type.includes('mp4') ? 'mp4' : 'webm';
-    const baseName = videoFile.name.replace(/\.[^.]+$/, '');
-    const a = document.createElement('a');
+    var ext = resultBlob.type.includes('mp4') ? 'mp4' : 'webm';
+    var baseName = videoFile.name.replace(/\.[^.]+$/, '');
+    var a = document.createElement('a');
     a.href = URL.createObjectURL(resultBlob);
     a.download = baseName + '-framed.' + ext;
     document.body.appendChild(a);
@@ -713,8 +776,12 @@
 
     setColor('#F5F2EB');
     speed = 1;
+    device = 'apple';
     speedOptions.querySelectorAll('.speed-option').forEach(function(b) {
       b.classList.toggle('active', b.dataset.speed === '1');
+    });
+    deviceOptions.querySelectorAll('.speed-option').forEach(function(b) {
+      b.classList.toggle('active', b.dataset.device === 'apple');
     });
   });
 
@@ -736,7 +803,7 @@
 
   function loadImage(src) {
     return new Promise(function(resolve, reject) {
-      const img = new Image();
+      var img = new Image();
       img.onload = function() { resolve(img); };
       img.onerror = function() { reject(new Error('Failed to load image: ' + src)); };
       img.src = src;
@@ -779,8 +846,8 @@
     return { videoBitsPerSecond: 16000000 };
   }
 
-  // --- Render frame ---
-  function renderFrame(ctx, videoElement, deviceFrameImg, coverUpImg, color) {
+  // --- Render frame (device-agnostic) ---
+  function renderFrame(ctx, videoElement, deviceFrameImg, coverUpImg, color, layout) {
     var canvas = ctx.canvas;
 
     // 1. Background
@@ -789,7 +856,9 @@
 
     // 2. Video with rounded corners
     ctx.save();
-    var x = SCREEN_X, y = SCREEN_Y, w = SCREEN_W, h = SCREEN_H, r = CORNER_RADIUS;
+    var x = layout.screenX, y = layout.screenY;
+    var w = layout.screenW, h = layout.screenH;
+    var r = layout.cornerRadius;
 
     ctx.beginPath();
     ctx.moveTo(x + r, y);
@@ -804,47 +873,45 @@
     ctx.closePath();
     ctx.clip();
 
-    // Object-fit cover
+    // Object-fit cover: scales any input resolution to fill the screen area
     var videoAspect = videoElement.videoWidth / videoElement.videoHeight;
-    var screenAspect = SCREEN_W / SCREEN_H;
+    var screenAspect = w / h;
     var drawW, drawH, drawX, drawY;
 
     if (videoAspect > screenAspect) {
-      drawH = SCREEN_H;
-      drawW = SCREEN_H * videoAspect;
-      drawX = SCREEN_X + (SCREEN_W - drawW) / 2;
-      drawY = SCREEN_Y;
+      drawH = h;
+      drawW = h * videoAspect;
+      drawX = x + (w - drawW) / 2;
+      drawY = y;
     } else {
-      drawW = SCREEN_W;
-      drawH = SCREEN_W / videoAspect;
-      drawX = SCREEN_X;
-      drawY = SCREEN_Y + (SCREEN_H - drawH) / 2;
+      drawW = w;
+      drawH = w / videoAspect;
+      drawX = x;
+      drawY = y + (h - drawH) / 2;
     }
 
     ctx.drawImage(videoElement, drawX, drawY, drawW, drawH);
     ctx.restore();
 
     // 3. Device frame
-    ctx.drawImage(deviceFrameImg, FRAME_X, FRAME_Y, FRAME_W, FRAME_H);
+    ctx.drawImage(deviceFrameImg, layout.frameX, layout.frameY, layout.frameW, layout.frameH);
 
-    // 4. Cover-up
-    var coverW = coverUpImg.naturalWidth * COVERUP_SCALE;
-    var coverH = coverUpImg.naturalHeight * COVERUP_SCALE;
-    ctx.drawImage(coverUpImg, COVERUP_X, COVERUP_Y, coverW, coverH);
+    // 4. Cover-up (Apple only)
+    if (layout.coverUp && coverUpImg) {
+      var coverW = coverUpImg.naturalWidth * layout.coverUp.scale;
+      var coverH = coverUpImg.naturalHeight * layout.coverUp.scale;
+      ctx.drawImage(coverUpImg, layout.coverUp.x, layout.coverUp.y, coverW, coverH);
+    }
   }
 
-  // --- Output constants (Reels-ready) ---
-  const OUTPUT_W = 1080;
-  const OUTPUT_H = 1920;
-
   // --- Main processing (two-canvas approach) ---
-  // Render at full resolution on an internal canvas, then scale down
-  // to 1080×1920 on the output canvas that MediaRecorder captures.
-  async function processVideo(vFile, color, spd, ecFile) {
+  async function processVideo(vFile, color, spd, deviceKey, ecFile) {
+    var layout = getDeviceLayout(deviceKey);
+
     // Internal canvas: full resolution for quality compositing
     var renderCanvas = document.createElement('canvas');
-    renderCanvas.width = CANVAS_W;
-    renderCanvas.height = CANVAS_H;
+    renderCanvas.width = layout.canvasW;
+    renderCanvas.height = layout.canvasH;
     var renderCtx = renderCanvas.getContext('2d');
 
     // Output canvas: 1080×1920 for MediaRecorder capture
@@ -856,8 +923,8 @@
     outputCtx.imageSmoothingQuality = 'high';
 
     // Load assets
-    var deviceFrame = await loadImage('device-frame.png');
-    var coverUp = await loadImage('cover-up.png');
+    var deviceFrame = await loadImage(layout.frameImg);
+    var coverUpImg = layout.coverUp ? await loadImage(layout.coverUp.img) : null;
 
     // Set up video
     var video = document.createElement('video');
@@ -901,12 +968,10 @@
           return;
         }
 
-        // Render at full resolution, then scale to output preserving aspect ratio
-        renderFrame(renderCtx, video, deviceFrame, coverUp, color);
+        renderFrame(renderCtx, video, deviceFrame, coverUpImg, color, layout);
         scaleToOutput(outputCtx, renderCanvas, color);
 
         frameCount++;
-
         var pct = Math.min(100, Math.round((frameCount / totalFrames) * 100));
         progressFill.style.width = pct + '%';
         progressText.textContent = 'Processing frame ' + frameCount + ' of ~' + totalFrames;
@@ -948,7 +1013,6 @@
           return;
         }
 
-        // Render end card at full resolution
         renderCtx.fillStyle = color;
         renderCtx.fillRect(0, 0, renderCanvas.width, renderCanvas.height);
 
@@ -969,7 +1033,6 @@
         }
 
         renderCtx.drawImage(ecVideo, drawX, drawY, drawW, drawH);
-        // Scale to output preserving aspect ratio
         scaleToOutput(outputCtx, renderCanvas, color);
 
         requestAnimationFrame(drawEndCardLoop);

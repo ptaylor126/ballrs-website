@@ -433,7 +433,7 @@
   const FRAME_H = 2710;
   const SCREEN_W_PERCENT = 93;
   const SCREEN_H_PERCENT = 98;
-  const CORNER_RADIUS = 55;
+  const CORNER_RADIUS = 175;
   const PADDING = 80;
 
   let SCREEN_W = Math.floor(FRAME_W * SCREEN_W_PERCENT / 100);
@@ -449,9 +449,9 @@
   const FRAME_X = PADDING;
   const FRAME_Y = PADDING;
 
-  const COVERUP_SCALE = 2.0;
-  const COVERUP_X = SCREEN_X + 10;
-  const COVERUP_Y = SCREEN_Y + 5;
+  const COVERUP_SCALE = 1.7;
+  const COVERUP_X = SCREEN_X + 55;
+  const COVERUP_Y = SCREEN_Y + 35;
 
   // --- Color Presets ---
   const PRESETS = [
@@ -758,10 +758,10 @@
     ];
     for (var i = 0; i < types.length; i++) {
       if (MediaRecorder.isTypeSupported(types[i])) {
-        return { mimeType: types[i], videoBitsPerSecond: 8000000 };
+        return { mimeType: types[i], videoBitsPerSecond: 16000000 };
       }
     }
-    return { videoBitsPerSecond: 8000000 };
+    return { videoBitsPerSecond: 16000000 };
   }
 
   // --- Render frame ---
@@ -837,6 +837,8 @@
     outputCanvas.width = OUTPUT_W;
     outputCanvas.height = OUTPUT_H;
     var outputCtx = outputCanvas.getContext('2d');
+    outputCtx.imageSmoothingEnabled = true;
+    outputCtx.imageSmoothingQuality = 'high';
 
     // Load assets
     var deviceFrame = await loadImage('device-frame.png');

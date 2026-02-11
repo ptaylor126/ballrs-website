@@ -1179,10 +1179,19 @@
       await renderFullScreenVideo(icFile, outputCanvas, outputCtx, color);
     }
 
-    // Play video at speed
+    // Play video at speed — ensure seek completes and frames are flowing
     video.playbackRate = spd;
     video.currentTime = 0;
+    await new Promise(function(resolve) { video.onseeked = resolve; });
     await video.play();
+    // Wait for first actual frame before starting render loop
+    await new Promise(function(resolve) {
+      if ('requestVideoFrameCallback' in video) {
+        video.requestVideoFrameCallback(resolve);
+      } else {
+        setTimeout(resolve, 50);
+      }
+    });
 
     // Render loop
     var frameCount = 0;

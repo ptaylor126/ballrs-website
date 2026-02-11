@@ -410,6 +410,17 @@
       </div>
 
       <div class="settings-section">
+        <span class="section-label">Intro Card (Optional)</span>
+        <div class="endcard-drop" id="introcardDrop">Add intro card video (MP4)</div>
+        <input type="file" id="introcardInput" accept="video/mp4,.mp4" hidden>
+        <div class="endcard-info" id="introcardInfo">
+          <span class="filename" id="introcardName"></span>
+          <button class="remove-btn" id="removeIntrocard">Remove</button>
+        </div>
+        <div class="endcard-note">Intro card will play before the screen recording</div>
+      </div>
+
+      <div class="settings-section">
         <span class="section-label">End Card (Optional)</span>
         <div class="endcard-drop" id="endcardDrop">Add end card video (MP4)</div>
         <input type="file" id="endcardInput" accept="video/mp4,.mp4" hidden>
@@ -417,7 +428,7 @@
           <span class="filename" id="endcardName"></span>
           <button class="remove-btn" id="removeEndcard">Remove</button>
         </div>
-        <div class="endcard-note">End card will be scaled to match and appended to the end of the video</div>
+        <div class="endcard-note">End card will play after the screen recording</div>
       </div>
     </div>
   </div>
@@ -546,6 +557,11 @@
   var deviceOptions = document.getElementById('deviceOptions');
   var frameColorOptions = document.getElementById('frameColorOptions');
   var speedOptions = document.getElementById('speedOptions');
+  var introcardDrop = document.getElementById('introcardDrop');
+  var introcardInput = document.getElementById('introcardInput');
+  var introcardInfo = document.getElementById('introcardInfo');
+  var introcardName = document.getElementById('introcardName');
+  var removeIntrocard = document.getElementById('removeIntrocard');
   var endcardDrop = document.getElementById('endcardDrop');
   var endcardInput = document.getElementById('endcardInput');
   var endcardInfo = document.getElementById('endcardInfo');
@@ -565,6 +581,7 @@
   var videoFile = null;
   var imageFile = null;
   var inputMode = null; // 'video' or 'image'
+  var introcardFile = null;
   var endcardFile = null;
   var bgColor = '#F5F2EB';
   var speed = 1;
@@ -740,6 +757,38 @@
     updateProcessBtn();
   }
 
+  // --- Intro card upload ---
+  introcardDrop.addEventListener('click', function() { introcardInput.click(); });
+  introcardDrop.addEventListener('dragover', function(e) { e.preventDefault(); introcardDrop.classList.add('dragover'); });
+  introcardDrop.addEventListener('dragleave', function() { introcardDrop.classList.remove('dragover'); });
+  introcardDrop.addEventListener('drop', function(e) {
+    e.preventDefault();
+    introcardDrop.classList.remove('dragover');
+    if (e.dataTransfer.files.length) handleIntrocard(e.dataTransfer.files[0]);
+  });
+  introcardInput.addEventListener('change', function() {
+    if (introcardInput.files.length) handleIntrocard(introcardInput.files[0]);
+  });
+
+  function handleIntrocard(file) {
+    if (!file.type.match(/video\/mp4/i) && !file.name.match(/\.mp4$/i)) {
+      showError('Intro card must be an MP4 file.');
+      return;
+    }
+    hideError();
+    introcardFile = file;
+    introcardName.textContent = file.name;
+    introcardInfo.style.display = 'block';
+    introcardDrop.style.display = 'none';
+  }
+
+  removeIntrocard.addEventListener('click', function() {
+    introcardFile = null;
+    introcardInfo.style.display = 'none';
+    introcardDrop.style.display = 'block';
+    introcardInput.value = '';
+  });
+
   // --- End card upload ---
   endcardDrop.addEventListener('click', function() { endcardInput.click(); });
   endcardDrop.addEventListener('dragover', function(e) { e.preventDefault(); endcardDrop.classList.add('dragover'); });
@@ -805,7 +854,7 @@
         progressContainer.style.display = 'block';
         progressFill.style.width = '0%';
         progressText.textContent = 'Preparing...';
-        resultBlob = await processVideo(videoFile, bgColor, speed, device, frameVariant, endcardFile);
+        resultBlob = await processVideo(videoFile, bgColor, speed, device, frameVariant, introcardFile, endcardFile);
         processBtn.textContent = 'Download Video';
       }
       processBtn.classList.add('downloading');
@@ -841,11 +890,13 @@
     videoFile = null;
     imageFile = null;
     inputMode = null;
+    introcardFile = null;
     endcardFile = null;
     resultBlob = null;
     processing = false;
 
     fileInput.value = '';
+    introcardInput.value = '';
     endcardInput.value = '';
     fileInfo.style.display = 'none';
     fileWarning.style.display = 'none';
@@ -861,6 +912,8 @@
     processBtn.textContent = 'Create Video';
     processBtn.classList.remove('downloading');
     processBtn.disabled = true;
+    introcardInfo.style.display = 'none';
+    introcardDrop.style.display = 'block';
     endcardInfo.style.display = 'none';
     endcardDrop.style.display = 'block';
     hideError();
@@ -1077,7 +1130,7 @@
   }
 
   // --- Main processing (two-canvas approach) ---
-  async function processVideo(vFile, color, spd, deviceKey, variantIdx, ecFile) {
+  async function processVideo(vFile, color, spd, deviceKey, variantIdx, icFile, ecFile) {
     var layout = getDeviceLayout(deviceKey, variantIdx);
 
     // Internal canvas: full resolution for quality compositing
@@ -1120,6 +1173,12 @@
 
     mediaRecorder.start(100);
 
+    // Play intro card first (if provided)
+    if (icFile) {
+      progressText.textContent = 'Rendering intro card...';
+      await renderFullScreenVideo(icFile, outputCanvas, outputCtx, color);
+    }
+
     // Play video at speed
     video.playbackRate = spd;
     video.currentTime = 0;
@@ -1132,7 +1191,10 @@
       function drawLoop() {
         if (video.ended || video.paused) {
           if (ecFile) {
-            renderEndCard(ecFile, renderCanvas, renderCtx, outputCanvas, outputCtx, color, mediaRecorder).then(resolveMain);
+            renderFullScreenVideo(ecFile, outputCanvas, outputCtx, color).then(function() {
+              mediaRecorder.stop();
+              resolveMain();
+            });
           } else {
             mediaRecorder.stop();
             resolveMain();
@@ -1168,52 +1230,50 @@
     return new Blob(chunks, { type: mimeType });
   }
 
-  // --- End card ---
-  // Renders directly to the output canvas at full 1080×1920 (no device frame, no intermediate scaling)
-  async function renderEndCard(ecFile, renderCanvas, renderCtx, outputCanvas, outputCtx, color, mediaRecorder) {
-    var ecVideo = document.createElement('video');
-    ecVideo.src = URL.createObjectURL(ecFile);
-    ecVideo.muted = true;
-    ecVideo.playsInline = true;
-    await waitForVideoReady(ecVideo);
-    await ecVideo.play();
+  // --- Full-screen video renderer (used for intro card and end card) ---
+  // Renders directly to the output canvas at full 1080×1920 (no device frame)
+  async function renderFullScreenVideo(file, outputCanvas, outputCtx, color) {
+    var vid = document.createElement('video');
+    vid.src = URL.createObjectURL(file);
+    vid.muted = true;
+    vid.playsInline = true;
+    await waitForVideoReady(vid);
+    await vid.play();
 
     await new Promise(function(resolve) {
-      function drawEndCardLoop() {
-        if (ecVideo.ended || ecVideo.paused) {
-          mediaRecorder.stop();
+      function drawLoop() {
+        if (vid.ended || vid.paused) {
           resolve();
           return;
         }
 
-        // Draw directly to output canvas at full 1080×1920
         outputCtx.fillStyle = color;
         outputCtx.fillRect(0, 0, OUTPUT_W, OUTPUT_H);
 
-        var ecAspect = ecVideo.videoWidth / ecVideo.videoHeight;
+        var aspect = vid.videoWidth / vid.videoHeight;
         var outAspect = OUTPUT_W / OUTPUT_H;
         var drawW, drawH, drawX, drawY;
 
-        if (ecAspect > outAspect) {
+        if (aspect > outAspect) {
           drawW = OUTPUT_W;
-          drawH = OUTPUT_W / ecAspect;
+          drawH = OUTPUT_W / aspect;
           drawX = 0;
           drawY = (OUTPUT_H - drawH) / 2;
         } else {
           drawH = OUTPUT_H;
-          drawW = OUTPUT_H * ecAspect;
+          drawW = OUTPUT_H * aspect;
           drawX = (OUTPUT_W - drawW) / 2;
           drawY = 0;
         }
 
-        outputCtx.drawImage(ecVideo, drawX, drawY, drawW, drawH);
-        requestAnimationFrame(drawEndCardLoop);
+        outputCtx.drawImage(vid, drawX, drawY, drawW, drawH);
+        requestAnimationFrame(drawLoop);
       }
-      drawEndCardLoop();
+      drawLoop();
     });
 
-    ecVideo.pause();
-    URL.revokeObjectURL(ecVideo.src);
+    vid.pause();
+    URL.revokeObjectURL(vid.src);
   }
 
 })();

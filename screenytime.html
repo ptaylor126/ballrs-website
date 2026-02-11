@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Screenytime</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #fff;
+      color: #1a1a1a;
+      line-height: 1.5;
+      padding: 40px 24px 80px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 32px;
+    }
+
+    .browser-warning {
+      background: #FFF9E6;
+      border: 1px solid #F2C94C;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      margin-bottom: 24px;
+      display: none;
+    }
+
+    /* Drop zone */
+    .drop-zone {
+      border: 2px dashed #ccc;
+      border-radius: 12px;
+      padding: 48px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .drop-zone:hover,
+    .drop-zone.dragover {
+      border-color: #1ABC9C;
+      background: #f0fdfb;
+    }
+
+    .drop-zone-label {
+      font-size: 16px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .drop-zone-hint {
+      font-size: 13px;
+      color: #999;
+      margin-top: 8px;
+    }
+
+    .file-info {
+      display: none;
+      margin-top: 16px;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .file-info .filename {
+      font-weight: 600;
+    }
+
+    .file-info .filesize {
+      color: #666;
+      margin-left: 8px;
+    }
+
+    .file-warning {
+      color: #b45309;
+      font-size: 13px;
+      margin-top: 8px;
+      display: none;
+    }
+
+    .preview-video {
+      display: none;
+      margin-top: 16px;
+      width: 100%;
+      max-width: 320px;
+      border-radius: 8px;
+      background: #000;
+    }
+
+    /* Settings */
+    .settings {
+      display: none;
+      margin-top: 32px;
+    }
+
+    .settings-section {
+      margin-bottom: 28px;
+    }
+
+    .settings-section label,
+    .section-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    /* Color picker */
+    .color-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .color-swatch {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: 2px solid #ddd;
+      flex-shrink: 0;
+    }
+
+    .color-input {
+      width: 100px;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: monospace;
+    }
+
+    .color-input:focus {
+      outline: none;
+      border-color: #1ABC9C;
+    }
+
+    .color-presets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .color-preset {
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 2px solid #1a1a1a;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    .color-preset:hover {
+      transform: scale(1.05);
+    }
+
+    .color-preset:active {
+      transform: scale(0.97);
+    }
+
+    /* Speed control */
+    .speed-options {
+      display: flex;
+      gap: 0;
+      border: 2px solid #1a1a1a;
+      border-radius: 8px;
+      overflow: hidden;
+      width: fit-content;
+    }
+
+    .speed-option {
+      padding: 8px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      background: #fff;
+      border-right: 2px solid #1a1a1a;
+      transition: background 0.1s, color 0.1s;
+    }
+
+    .speed-option:last-child {
+      border-right: none;
+    }
+
+    .speed-option.active {
+      background: #1a1a1a;
+      color: #fff;
+    }
+
+    .speed-option:hover:not(.active) {
+      background: #f5f5f5;
+    }
+
+    /* End card */
+    .endcard-drop {
+      border: 2px dashed #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 14px;
+      color: #666;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .endcard-drop:hover,
+    .endcard-drop.dragover {
+      border-color: #1ABC9C;
+      background: #f0fdfb;
+    }
+
+    .endcard-info {
+      display: none;
+      font-size: 14px;
+      margin-top: 8px;
+    }
+
+    .endcard-info .filename {
+      font-weight: 600;
+    }
+
+    .remove-btn {
+      background: none;
+      border: none;
+      color: #e74c3c;
+      font-size: 13px;
+      cursor: pointer;
+      margin-left: 12px;
+      text-decoration: underline;
+    }
+
+    .endcard-note {
+      font-size: 12px;
+      color: #999;
+      margin-top: 8px;
+    }
+
+    /* Process section */
+    .process-section {
+      display: none;
+      margin-top: 32px;
+    }
+
+    .process-btn {
+      width: 100%;
+      padding: 14px 24px;
+      font-size: 16px;
+      font-weight: 700;
+      border: 2px solid #1a1a1a;
+      border-radius: 10px;
+      cursor: pointer;
+      background: #1ABC9C;
+      color: #fff;
+      transition: transform 0.1s, box-shadow 0.1s;
+      box-shadow: 3px 3px 0 #1a1a1a;
+    }
+
+    .process-btn:hover:not(:disabled) {
+      transform: translate(-1px, -1px);
+      box-shadow: 4px 4px 0 #1a1a1a;
+    }
+
+    .process-btn:active:not(:disabled) {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0 #1a1a1a;
+    }
+
+    .process-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .process-btn.downloading {
+      background: #1a1a1a;
+    }
+
+    .progress-container {
+      display: none;
+      margin-top: 16px;
+    }
+
+    .progress-bar-track {
+      width: 100%;
+      height: 8px;
+      background: #eee;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: #1ABC9C;
+      border-radius: 4px;
+      width: 0%;
+      transition: width 0.2s;
+    }
+
+    .progress-text {
+      font-size: 13px;
+      color: #666;
+      margin-top: 6px;
+      text-align: center;
+    }
+
+    .reset-link {
+      display: none;
+      text-align: center;
+      margin-top: 16px;
+    }
+
+    .reset-link a {
+      color: #1ABC9C;
+      font-size: 14px;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .error-message {
+      display: none;
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #b91c1c;
+      margin-top: 16px;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid #eee;
+      margin: 32px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Screenytime</h1>
+  <p class="subtitle">Wrap screen recordings in a device frame. All processing happens in your browser.</p>
+
+  <div class="browser-warning" id="browserWarning"></div>
+
+  <!-- Section 1: Upload -->
+  <div class="drop-zone" id="dropZone">
+    <div class="drop-zone-label">Drag & drop screen recording here<br>or click to browse</div>
+    <div class="drop-zone-hint">Accepts MP4, MOV</div>
+  </div>
+  <input type="file" id="fileInput" accept="video/mp4,video/quicktime,.mp4,.mov" hidden>
+
+  <div class="file-info" id="fileInfo">
+    <span class="filename" id="fileName"></span>
+    <span class="filesize" id="fileSize"></span>
+  </div>
+  <div class="file-warning" id="fileWarning">This file is very large and may take a while to process.</div>
+  <video class="preview-video" id="previewVideo" muted controls playsinline></video>
+
+  <!-- Section 2: Settings -->
+  <div class="settings" id="settings">
+    <hr>
+
+    <div class="settings-section">
+      <label>Background Color</label>
+      <div class="color-row">
+        <div class="color-swatch" id="colorSwatch"></div>
+        <input type="text" class="color-input" id="colorInput" value="#F5F2EB" maxlength="7" spellcheck="false">
+      </div>
+      <div class="color-presets" id="colorPresets"></div>
+    </div>
+
+    <div class="settings-section">
+      <span class="section-label">Speed</span>
+      <div class="speed-options" id="speedOptions">
+        <button class="speed-option active" data-speed="1">1x</button>
+        <button class="speed-option" data-speed="1.5">1.5x</button>
+        <button class="speed-option" data-speed="2">2x</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <span class="section-label">End Card (Optional)</span>
+      <div class="endcard-drop" id="endcardDrop">Add end card video (MP4)</div>
+      <input type="file" id="endcardInput" accept="video/mp4,.mp4" hidden>
+      <div class="endcard-info" id="endcardInfo">
+        <span class="filename" id="endcardName"></span>
+        <button class="remove-btn" id="removeEndcard">Remove</button>
+      </div>
+      <div class="endcard-note">End card will be scaled to match and appended to the end of the video</div>
+    </div>
+  </div>
+
+  <!-- Section 3: Process -->
+  <div class="process-section" id="processSection">
+    <button class="process-btn" id="processBtn" disabled>Create Video</button>
+
+    <div class="progress-container" id="progressContainer">
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-text" id="progressText">Processing...</div>
+    </div>
+
+    <div class="error-message" id="errorMessage"></div>
+
+    <div class="reset-link" id="resetLink">
+      <a id="resetBtn">Create Another</a>
+    </div>
+  </div>
+
+<script>
+(function() {
+  'use strict';
+
+  // --- Layout Constants ---
+  const FRAME_W = 1310;
+  const FRAME_H = 2710;
+  const SCREEN_W_PERCENT = 93;
+  const SCREEN_H_PERCENT = 98;
+  const CORNER_RADIUS = 120;
+  const PADDING = 80;
+
+  let SCREEN_W = Math.floor(FRAME_W * SCREEN_W_PERCENT / 100);
+  let SCREEN_H = Math.floor(FRAME_H * SCREEN_H_PERCENT / 100);
+  SCREEN_W = Math.floor(SCREEN_W / 2) * 2;
+  SCREEN_H = Math.floor(SCREEN_H / 2) * 2;
+
+  const CANVAS_W = Math.floor((FRAME_W + PADDING * 2) / 2) * 2;
+  const CANVAS_H = Math.floor((FRAME_H + PADDING * 2) / 2) * 2;
+
+  const SCREEN_X = Math.floor((FRAME_W - SCREEN_W) / 2) + PADDING;
+  const SCREEN_Y = Math.floor((FRAME_H - SCREEN_H) / 2) + PADDING;
+  const FRAME_X = PADDING;
+  const FRAME_Y = PADDING;
+
+  const COVERUP_SCALE = 1.53;
+  const COVERUP_X = SCREEN_X + 80;
+  const COVERUP_Y = SCREEN_Y + 40;
+
+  // --- Color Presets ---
+  const PRESETS = [
+    { name: 'Cream',  hex: '#F5F2EB', dark: false },
+    { name: 'Teal',   hex: '#1ABC9C', dark: true  },
+    { name: 'Yellow', hex: '#F2C94C', dark: false },
+    { name: 'Black',  hex: '#1A1A1A', dark: true  },
+    { name: 'NBA',    hex: '#E07A3D', dark: true  },
+    { name: 'EPL',    hex: '#A17FFF', dark: true  },
+    { name: 'NFL',    hex: '#3BA978', dark: true  },
+    { name: 'MLB',    hex: '#7A93D2', dark: false },
+  ];
+
+  // --- DOM refs ---
+  const dropZone = document.getElementById('dropZone');
+  const fileInput = document.getElementById('fileInput');
+  const fileInfo = document.getElementById('fileInfo');
+  const fileName = document.getElementById('fileName');
+  const fileSize = document.getElementById('fileSize');
+  const fileWarning = document.getElementById('fileWarning');
+  const previewVideo = document.getElementById('previewVideo');
+  const settings = document.getElementById('settings');
+  const colorSwatch = document.getElementById('colorSwatch');
+  const colorInput = document.getElementById('colorInput');
+  const colorPresets = document.getElementById('colorPresets');
+  const speedOptions = document.getElementById('speedOptions');
+  const endcardDrop = document.getElementById('endcardDrop');
+  const endcardInput = document.getElementById('endcardInput');
+  const endcardInfo = document.getElementById('endcardInfo');
+  const endcardName = document.getElementById('endcardName');
+  const removeEndcard = document.getElementById('removeEndcard');
+  const processSection = document.getElementById('processSection');
+  const processBtn = document.getElementById('processBtn');
+  const progressContainer = document.getElementById('progressContainer');
+  const progressFill = document.getElementById('progressFill');
+  const progressText = document.getElementById('progressText');
+  const errorMessage = document.getElementById('errorMessage');
+  const resetLink = document.getElementById('resetLink');
+  const resetBtn = document.getElementById('resetBtn');
+  const browserWarning = document.getElementById('browserWarning');
+
+  // --- State ---
+  let videoFile = null;
+  let endcardFile = null;
+  let bgColor = '#F5F2EB';
+  let speed = 1;
+  let processing = false;
+  let resultBlob = null;
+
+  // --- Browser check ---
+  (function checkBrowser() {
+    if (typeof MediaRecorder === 'undefined') {
+      browserWarning.textContent = "Your browser doesn't support video recording. Try Chrome or Edge.";
+      browserWarning.style.display = 'block';
+      return;
+    }
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    if (isSafari) {
+      browserWarning.textContent = 'For best results, use Chrome or Edge. Safari has limited video recording support.';
+      browserWarning.style.display = 'block';
+    }
+  })();
+
+  // --- Color presets ---
+  PRESETS.forEach(function(p) {
+    const btn = document.createElement('button');
+    btn.className = 'color-preset';
+    btn.textContent = p.name;
+    btn.style.background = p.hex;
+    btn.style.color = p.dark ? '#fff' : '#1a1a1a';
+    btn.addEventListener('click', function() {
+      setColor(p.hex);
+    });
+    colorPresets.appendChild(btn);
+  });
+
+  function setColor(hex) {
+    bgColor = hex;
+    colorInput.value = hex;
+    colorSwatch.style.background = hex;
+    updateProcessBtn();
+  }
+
+  setColor('#F5F2EB');
+
+  colorInput.addEventListener('input', function() {
+    let v = colorInput.value.trim();
+    if (v && v[0] !== '#') v = '#' + v;
+    if (/^#[0-9A-Fa-f]{6}$/.test(v)) {
+      setColor(v);
+    }
+  });
+
+  // --- Speed ---
+  speedOptions.addEventListener('click', function(e) {
+    const btn = e.target.closest('.speed-option');
+    if (!btn) return;
+    speedOptions.querySelectorAll('.speed-option').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    speed = parseFloat(btn.dataset.speed);
+  });
+
+  // --- File upload (main video) ---
+  dropZone.addEventListener('click', function() { fileInput.click(); });
+  dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', function() { dropZone.classList.remove('dragover'); });
+  dropZone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) handleVideoFile(e.dataTransfer.files[0]);
+  });
+  fileInput.addEventListener('change', function() {
+    if (fileInput.files.length) handleVideoFile(fileInput.files[0]);
+  });
+
+  function handleVideoFile(file) {
+    const validTypes = ['video/mp4', 'video/quicktime'];
+    if (!validTypes.includes(file.type) && !file.name.match(/\.(mp4|mov)$/i)) {
+      showError('Only MP4 and MOV files are supported.');
+      return;
+    }
+    hideError();
+    videoFile = file;
+    fileName.textContent = file.name;
+    fileSize.textContent = '(' + formatSize(file.size) + ')';
+    fileInfo.style.display = 'block';
+
+    if (file.size > 200 * 1024 * 1024) {
+      fileWarning.style.display = 'block';
+    } else {
+      fileWarning.style.display = 'none';
+    }
+
+    // Preview
+    const url = URL.createObjectURL(file);
+    previewVideo.src = url;
+    previewVideo.style.display = 'block';
+
+    // Show settings & process
+    settings.style.display = 'block';
+    processSection.style.display = 'block';
+    updateProcessBtn();
+  }
+
+  // --- End card upload ---
+  endcardDrop.addEventListener('click', function() { endcardInput.click(); });
+  endcardDrop.addEventListener('dragover', function(e) { e.preventDefault(); endcardDrop.classList.add('dragover'); });
+  endcardDrop.addEventListener('dragleave', function() { endcardDrop.classList.remove('dragover'); });
+  endcardDrop.addEventListener('drop', function(e) {
+    e.preventDefault();
+    endcardDrop.classList.remove('dragover');
+    if (e.dataTransfer.files.length) handleEndcard(e.dataTransfer.files[0]);
+  });
+  endcardInput.addEventListener('change', function() {
+    if (endcardInput.files.length) handleEndcard(endcardInput.files[0]);
+  });
+
+  function handleEndcard(file) {
+    if (!file.type.match(/video\/mp4/i) && !file.name.match(/\.mp4$/i)) {
+      showError('End card must be an MP4 file.');
+      return;
+    }
+    hideError();
+    endcardFile = file;
+    endcardName.textContent = file.name;
+    endcardInfo.style.display = 'block';
+    endcardDrop.style.display = 'none';
+  }
+
+  removeEndcard.addEventListener('click', function() {
+    endcardFile = null;
+    endcardInfo.style.display = 'none';
+    endcardDrop.style.display = 'block';
+    endcardInput.value = '';
+  });
+
+  // --- Process button state ---
+  function updateProcessBtn() {
+    const ready = videoFile && /^#[0-9A-Fa-f]{6}$/.test(bgColor);
+    processBtn.disabled = !ready;
+  }
+
+  // --- Process / Download ---
+  processBtn.addEventListener('click', async function() {
+    if (resultBlob) {
+      downloadResult();
+      return;
+    }
+    if (processing) return;
+    await startProcessing();
+  });
+
+  async function startProcessing() {
+    processing = true;
+    hideError();
+    processBtn.textContent = 'Processing...';
+    processBtn.disabled = true;
+    progressContainer.style.display = 'block';
+    progressFill.style.width = '0%';
+    progressText.textContent = 'Preparing...';
+    resetLink.style.display = 'none';
+
+    try {
+      resultBlob = await processVideo(videoFile, bgColor, speed, endcardFile);
+      processBtn.textContent = 'Download Video';
+      processBtn.classList.add('downloading');
+      processBtn.disabled = false;
+      progressContainer.style.display = 'none';
+      resetLink.style.display = 'block';
+    } catch (err) {
+      console.error(err);
+      showError('Something went wrong during processing. Try a different video or refresh.');
+      processBtn.textContent = 'Create Video';
+      processBtn.disabled = false;
+      progressContainer.style.display = 'none';
+    }
+    processing = false;
+  }
+
+  function downloadResult() {
+    if (!resultBlob) return;
+    const ext = resultBlob.type.includes('mp4') ? 'mp4' : 'webm';
+    const baseName = videoFile.name.replace(/\.[^.]+$/, '');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(resultBlob);
+    a.download = baseName + '-framed.' + ext;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function() { URL.revokeObjectURL(a.href); }, 1000);
+  }
+
+  // --- Reset ---
+  resetBtn.addEventListener('click', function() {
+    videoFile = null;
+    endcardFile = null;
+    resultBlob = null;
+    processing = false;
+
+    fileInput.value = '';
+    endcardInput.value = '';
+    fileInfo.style.display = 'none';
+    fileWarning.style.display = 'none';
+    previewVideo.style.display = 'none';
+    previewVideo.src = '';
+    settings.style.display = 'none';
+    processSection.style.display = 'none';
+    progressContainer.style.display = 'none';
+    resetLink.style.display = 'none';
+    processBtn.textContent = 'Create Video';
+    processBtn.classList.remove('downloading');
+    processBtn.disabled = true;
+    endcardInfo.style.display = 'none';
+    endcardDrop.style.display = 'block';
+    hideError();
+
+    setColor('#F5F2EB');
+    speed = 1;
+    speedOptions.querySelectorAll('.speed-option').forEach(function(b) {
+      b.classList.toggle('active', b.dataset.speed === '1');
+    });
+  });
+
+  // --- Helpers ---
+  function formatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+
+  function showError(msg) {
+    errorMessage.textContent = msg;
+    errorMessage.style.display = 'block';
+  }
+
+  function hideError() {
+    errorMessage.style.display = 'none';
+  }
+
+  function loadImage(src) {
+    return new Promise(function(resolve, reject) {
+      const img = new Image();
+      img.onload = function() { resolve(img); };
+      img.onerror = function() { reject(new Error('Failed to load image: ' + src)); };
+      img.src = src;
+    });
+  }
+
+  function waitForVideoReady(video) {
+    return new Promise(function(resolve) {
+      if (video.readyState >= 2) { resolve(); return; }
+      video.onloadeddata = function() { resolve(); };
+      video.load();
+    });
+  }
+
+  function getMediaRecorderOptions() {
+    var types = [
+      'video/mp4;codecs=avc1',
+      'video/mp4',
+      'video/webm;codecs=vp9',
+      'video/webm;codecs=vp8',
+      'video/webm',
+    ];
+    for (var i = 0; i < types.length; i++) {
+      if (MediaRecorder.isTypeSupported(types[i])) {
+        return { mimeType: types[i], videoBitsPerSecond: 8000000 };
+      }
+    }
+    return { videoBitsPerSecond: 8000000 };
+  }
+
+  // --- Render frame ---
+  function renderFrame(ctx, videoElement, deviceFrameImg, coverUpImg, color) {
+    var canvas = ctx.canvas;
+
+    // 1. Background
+    ctx.fillStyle = color;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 2. Video with rounded corners
+    ctx.save();
+    var x = SCREEN_X, y = SCREEN_Y, w = SCREEN_W, h = SCREEN_H, r = CORNER_RADIUS;
+
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+    ctx.clip();
+
+    // Object-fit cover
+    var videoAspect = videoElement.videoWidth / videoElement.videoHeight;
+    var screenAspect = SCREEN_W / SCREEN_H;
+    var drawW, drawH, drawX, drawY;
+
+    if (videoAspect > screenAspect) {
+      drawH = SCREEN_H;
+      drawW = SCREEN_H * videoAspect;
+      drawX = SCREEN_X + (SCREEN_W - drawW) / 2;
+      drawY = SCREEN_Y;
+    } else {
+      drawW = SCREEN_W;
+      drawH = SCREEN_W / videoAspect;
+      drawX = SCREEN_X;
+      drawY = SCREEN_Y + (SCREEN_H - drawH) / 2;
+    }
+
+    ctx.drawImage(videoElement, drawX, drawY, drawW, drawH);
+    ctx.restore();
+
+    // 3. Device frame
+    ctx.drawImage(deviceFrameImg, FRAME_X, FRAME_Y, FRAME_W, FRAME_H);
+
+    // 4. Cover-up
+    var coverW = coverUpImg.naturalWidth * COVERUP_SCALE;
+    var coverH = coverUpImg.naturalHeight * COVERUP_SCALE;
+    ctx.drawImage(coverUpImg, COVERUP_X, COVERUP_Y, coverW, coverH);
+  }
+
+  // --- Main processing ---
+  async function processVideo(vFile, color, spd, ecFile) {
+    // Create offscreen canvas
+    var canvas = document.createElement('canvas');
+    canvas.width = CANVAS_W;
+    canvas.height = CANVAS_H;
+    var ctx = canvas.getContext('2d');
+
+    // Load assets
+    var deviceFrame = await loadImage('device-frame.png');
+    var coverUp = await loadImage('cover-up.png');
+
+    // Set up video
+    var video = document.createElement('video');
+    video.src = URL.createObjectURL(vFile);
+    video.muted = true;
+    video.playsInline = true;
+    await waitForVideoReady(video);
+
+    var fps = 30;
+    var duration = video.duration;
+    var totalFrames = Math.ceil((duration / spd) * fps);
+
+    // Set up MediaRecorder
+    var stream = canvas.captureStream(fps);
+    var opts = getMediaRecorderOptions();
+    var mediaRecorder = new MediaRecorder(stream, opts);
+    var chunks = [];
+    mediaRecorder.ondataavailable = function(e) {
+      if (e.data && e.data.size > 0) chunks.push(e.data);
+    };
+
+    mediaRecorder.start(100); // collect data every 100ms
+
+    // Play video at speed
+    video.playbackRate = spd;
+    video.currentTime = 0;
+    await video.play();
+
+    // Render loop
+    var frameCount = 0;
+
+    await new Promise(function(resolveMain) {
+      function drawLoop() {
+        if (video.ended || video.paused) {
+          if (ecFile) {
+            renderEndCard(ecFile, canvas, ctx, color, mediaRecorder, chunks).then(resolveMain);
+          } else {
+            mediaRecorder.stop();
+            resolveMain();
+          }
+          return;
+        }
+
+        renderFrame(ctx, video, deviceFrame, coverUp, color);
+        frameCount++;
+
+        // Update progress
+        var pct = Math.min(100, Math.round((frameCount / totalFrames) * 100));
+        progressFill.style.width = pct + '%';
+        progressText.textContent = 'Processing frame ' + frameCount + ' of ~' + totalFrames;
+
+        requestAnimationFrame(drawLoop);
+      }
+      drawLoop();
+    });
+
+    // Wait for MediaRecorder to finalize
+    await new Promise(function(resolve) {
+      if (mediaRecorder.state === 'inactive') { resolve(); return; }
+      mediaRecorder.onstop = resolve;
+      if (mediaRecorder.state === 'recording') mediaRecorder.stop();
+    });
+
+    // Clean up
+    video.pause();
+    URL.revokeObjectURL(video.src);
+
+    var mimeType = mediaRecorder.mimeType || 'video/webm';
+    return new Blob(chunks, { type: mimeType });
+  }
+
+  // --- End card ---
+  async function renderEndCard(ecFile, canvas, ctx, color, mediaRecorder, chunks) {
+    var ecVideo = document.createElement('video');
+    ecVideo.src = URL.createObjectURL(ecFile);
+    ecVideo.muted = true;
+    ecVideo.playsInline = true;
+    await waitForVideoReady(ecVideo);
+    await ecVideo.play();
+
+    await new Promise(function(resolve) {
+      function drawEndCardLoop() {
+        if (ecVideo.ended || ecVideo.paused) {
+          mediaRecorder.stop();
+          resolve();
+          return;
+        }
+
+        // Fill background
+        ctx.fillStyle = color;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Scale end card to fit canvas
+        var ecAspect = ecVideo.videoWidth / ecVideo.videoHeight;
+        var canvasAspect = canvas.width / canvas.height;
+        var drawW, drawH, drawX, drawY;
+
+        if (ecAspect > canvasAspect) {
+          drawW = canvas.width;
+          drawH = canvas.width / ecAspect;
+          drawX = 0;
+          drawY = (canvas.height - drawH) / 2;
+        } else {
+          drawH = canvas.height;
+          drawW = canvas.height * ecAspect;
+          drawX = (canvas.width - drawW) / 2;
+          drawY = 0;
+        }
+
+        ctx.drawImage(ecVideo, drawX, drawY, drawW, drawH);
+        requestAnimationFrame(drawEndCardLoop);
+      }
+      drawEndCardLoop();
+    });
+
+    ecVideo.pause();
+    URL.revokeObjectURL(ecVideo.src);
+  }
+
+})();
+</script>
+
+</body>
+</html>

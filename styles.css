@@ -487,6 +487,10 @@ body {
 
 /* Responsive */
 @media (max-width: 768px) {
+  .hero {
+    padding: 40px 0 60px;
+  }
+
   .hero-title {
     font-size: 48px;
   }
@@ -497,11 +501,39 @@ body {
 
   .header .container {
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
+  }
+
+  .logo-text {
+    display: none;
+  }
+
+  .logo-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
   }
 
   .nav {
     gap: 16px;
+  }
+
+  .sports-row {
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .sport-badge {
+    min-width: auto;
+  }
+
+  .sport-badge img {
+    width: 44px;
+    height: 44px;
+  }
+
+  .sport-badge span {
+    font-size: 11px;
   }
 
   .modes-grid {
@@ -549,18 +581,5 @@ body {
   .hero-title {
     font-size: 36px;
     letter-spacing: 2px;
-  }
-
-  .sports-row {
-    gap: 16px;
-  }
-
-  .sport-badge img {
-    width: 48px;
-    height: 48px;
-  }
-
-  .sport-badge span {
-    font-size: 12px;
   }
 }

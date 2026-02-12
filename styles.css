@@ -62,11 +62,20 @@ body {
 }
 
 .logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-size: 28px;
   font-weight: 900;
   color: var(--color-black);
   text-decoration: none;
   letter-spacing: 2px;
+}
+
+.logo-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
 }
 
 .nav {
@@ -104,7 +113,34 @@ body {
   font-size: 24px;
   font-weight: 500;
   color: var(--color-gray);
+  margin-bottom: 32px;
+}
+
+/* Sports Row (in hero) */
+.sports-row {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  flex-wrap: wrap;
   margin-bottom: 40px;
+}
+
+.sport-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.sport-badge img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+}
+
+.sport-badge span {
+  font-size: 14px;
+  font-weight: 700;
 }
 
 /* Buttons */
@@ -192,8 +228,10 @@ body {
   box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--color-black);
 }
 
-.mode-emoji {
-  font-size: 40px;
+.mode-icon {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
   margin-bottom: 16px;
 }
 
@@ -219,56 +257,6 @@ body {
   margin-right: auto;
 }
 
-/* Sports Section */
-.sports {
-  padding: 64px 0;
-}
-
-.sports-row {
-  display: flex;
-  justify-content: center;
-  gap: 32px;
-  flex-wrap: wrap;
-}
-
-.sport-badge {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
-
-.sport-badge img {
-  width: 56px;
-  height: 56px;
-  padding: 10px;
-  border: var(--border-width) solid var(--color-black);
-  border-radius: 12px;
-  box-shadow: 3px 3px 0 var(--color-black);
-  object-fit: contain;
-}
-
-.sport-nba img {
-  background-color: var(--color-nba);
-}
-
-.sport-nfl img {
-  background-color: var(--color-nfl);
-}
-
-.sport-mlb img {
-  background-color: var(--color-mlb);
-}
-
-.sport-epl img {
-  background-color: var(--color-epl);
-}
-
-.sport-badge span {
-  font-size: 14px;
-  font-weight: 700;
-}
-
 /* Social/Competitive Section */
 .social {
   padding: 80px 0;
@@ -291,8 +279,10 @@ body {
   box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--color-black);
 }
 
-.social-emoji {
-  font-size: 40px;
+.social-icon {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
   margin-bottom: 16px;
 }
 
@@ -566,7 +556,6 @@ body {
   .sport-badge img {
     width: 48px;
     height: 48px;
-    padding: 8px;
   }
 
   .sport-badge span {

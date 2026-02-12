@@ -14,7 +14,7 @@
     <meta property="og:url" content="https://ballrs.net">
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="icon" type="image/png" href="favicon.png?v=2">
 
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -22,7 +22,10 @@
     <!-- Header -->
     <header class="header">
         <div class="container">
-            <a href="/" class="logo">BALLRS</a>
+            <a href="/" class="logo">
+                <img src="favicon.png" alt="Ballrs" class="logo-icon" />
+                BALLRS
+            </a>
             <nav class="nav">
                 <a href="#game-modes">Game Modes</a>
                 <a href="#download">Download</a>
@@ -36,6 +39,24 @@
         <div class="container">
             <h1 class="hero-title">BALLRS</h1>
             <p class="hero-tagline">Sports trivia. Daily puzzles. Friend duels.</p>
+            <div class="sports-row">
+                <div class="sport-badge">
+                    <img src="icon-basketball.png" alt="NBA" />
+                    <span>NBA</span>
+                </div>
+                <div class="sport-badge">
+                    <img src="icon-football.png" alt="NFL" />
+                    <span>NFL</span>
+                </div>
+                <div class="sport-badge">
+                    <img src="icon-baseball.png" alt="MLB" />
+                    <span>MLB</span>
+                </div>
+                <div class="sport-badge">
+                    <img src="icon-soccer.png" alt="Premier League" />
+                    <span>Premier League</span>
+                </div>
+            </div>
             <div id="download" class="btn-group">
                 <a href="https://apps.apple.com/us/app/ballrs-sports-trivia/id6756982139" class="btn btn-dark">
                     <svg class="store-icon" viewBox="0 0 24 24" fill="currentColor">
@@ -59,46 +80,22 @@
             <h2 class="section-title">Pick Your Game</h2>
             <div class="modes-grid">
                 <div class="mode-card">
-                    <div class="mode-emoji">🔍</div>
+                    <img src="icon-game-cluedrop.png" alt="Clue Drop" class="mode-icon" />
                     <h3 class="mode-title">Clue Drop</h3>
                     <p class="mode-description">Six clues. One mystery player. The fewer hints you need, the more points you earn.</p>
                 </div>
                 <div class="mode-card">
-                    <div class="mode-emoji">🏟️</div>
+                    <img src="icon-game-careerpath.png" alt="Career Path" class="mode-icon" />
                     <h3 class="mode-title">Career Path</h3>
                     <p class="mode-description">A player's career revealed one team at a time. Can you figure out who wore the jerseys?</p>
                 </div>
                 <div class="mode-card">
-                    <div class="mode-emoji">⬆️⬇️</div>
+                    <img src="icon-game-overunder.png" alt="Over Under" class="mode-icon" />
                     <h3 class="mode-title">Over Under</h3>
                     <p class="mode-description">Two players. One stat. Is the second player's number higher or lower? Test how well you really know the numbers.</p>
                 </div>
             </div>
             <p class="modes-footnote">New puzzles every day for each game mode and each sport — NBA, NFL, MLB, and Premier League.</p>
-        </div>
-    </section>
-
-    <!-- Sports Section -->
-    <section class="sports">
-        <div class="container">
-            <div class="sports-row">
-                <div class="sport-badge sport-nba">
-                    <img src="icon-basketball.png" alt="NBA" />
-                    <span>NBA</span>
-                </div>
-                <div class="sport-badge sport-nfl">
-                    <img src="icon-football.png" alt="NFL" />
-                    <span>NFL</span>
-                </div>
-                <div class="sport-badge sport-mlb">
-                    <img src="icon-baseball.png" alt="MLB" />
-                    <span>MLB</span>
-                </div>
-                <div class="sport-badge sport-epl">
-                    <img src="icon-soccer.png" alt="Premier League" />
-                    <span>Premier League</span>
-                </div>
-            </div>
         </div>
     </section>
 
@@ -108,12 +105,12 @@
             <h2 class="section-title">Talk is cheap. Settle it.</h2>
             <div class="social-grid">
                 <div class="social-card">
-                    <div class="social-emoji">⚔️</div>
+                    <img src="icon-duel.png" alt="Duels" class="social-icon" />
                     <h3 class="social-title">Duels</h3>
                     <p class="social-description">Challenge friends to head-to-head matchups on the same questions.</p>
                 </div>
                 <div class="social-card">
-                    <div class="social-emoji">🏆</div>
+                    <img src="icon-trophy.png" alt="Leagues & Leaderboards" class="social-icon" />
                     <h3 class="social-title">Leagues & Leaderboards</h3>
                     <p class="social-description">Create a private league. Climb the global leaderboard. Weekly and all-time standings.</p>
                 </div>

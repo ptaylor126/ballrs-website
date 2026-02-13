@@ -73,9 +73,13 @@ body {
 }
 
 .logo-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
+  width: 108px;
+  height: 108px;
+  border-radius: 20px;
+}
+
+.logo-text {
+  display: none;
 }
 
 /* Hamburger (hidden on desktop) */
@@ -527,10 +531,6 @@ body {
 
   .hamburger {
     display: flex;
-  }
-
-  .logo-text {
-    display: none;
   }
 
   .logo-icon {

@@ -114,6 +114,10 @@ body {
   color: var(--color-teal);
 }
 
+.nav-close {
+  display: none;
+}
+
 /* Hero Section */
 .hero {
   padding: 80px 0;
@@ -506,26 +510,23 @@ body {
 
 /* Responsive */
 @media (max-width: 768px) {
-  /* Header: logo centered, hamburger top-right */
+  /* Header: logo top-left, hamburger top-right */
   .header {
     border-bottom: none;
-    padding: 16px 0;
+    padding: 0;
   }
 
   .header .container {
     display: flex;
     flex-direction: row;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-    position: relative;
+    padding-top: 24px;
+    padding-bottom: 12px;
   }
 
   .hamburger {
     display: flex;
-    position: absolute;
-    right: 24px;
-    top: 50%;
-    transform: translateY(-50%);
   }
 
   .logo-text {
@@ -533,27 +534,52 @@ body {
   }
 
   .logo-icon {
-    width: 108px;
-    height: 108px;
-    border-radius: 20px;
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
   }
 
+  /* Mobile nav overlay */
   .nav {
     display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--color-cream);
+    z-index: 200;
     flex-direction: column;
     align-items: center;
-    gap: 16px;
-    width: 100%;
-    padding-top: 16px;
+    justify-content: center;
+    gap: 32px;
   }
 
   .nav.nav-open {
     display: flex;
   }
 
+  .nav a {
+    font-size: 24px;
+    font-weight: 900;
+  }
+
+  .nav-close {
+    display: block;
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    background: none;
+    border: none;
+    font-size: 36px;
+    cursor: pointer;
+    color: var(--color-black);
+    line-height: 1;
+  }
+
   /* Hero: remove BALLRS text, keep tagline */
   .hero {
-    padding: 24px 0 48px;
+    padding: 16px 0 48px;
   }
 
   .hero-title {

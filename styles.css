@@ -583,7 +583,7 @@ body {
   }
 
   .hero-title {
-    display: none;
+    font-size: 48px;
   }
 
   .hero-tagline {

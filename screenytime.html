@@ -463,7 +463,7 @@
       frameW: 1310, frameH: 2710,
       screenWPct: 93, screenHPct: 98,
       cornerRadius: 175, padding: 80,
-      coverUp: { img: 'cover-up.png', scale: 1.53, xOffset: 80, yOffset: 40 },
+      coverUp: { w: 190, h: 89, xOffset: 80, yOffset: 40 },
       renderScale: 1,
       variants: [
         { name: 'Natural', img: 'device-frame-natural.png' },
@@ -514,10 +514,10 @@
     var coverUp = null;
     if (d.coverUp) {
       coverUp = {
-        img: d.coverUp.img,
-        scale: d.coverUp.scale,
         x: screenX + d.coverUp.xOffset * s,
         y: screenY + d.coverUp.yOffset * s,
+        w: d.coverUp.w * s,
+        h: d.coverUp.h * s,
       };
     }
 
@@ -1048,7 +1048,7 @@
   }
 
   // --- Render image frame (same compositing as video, but for a static Image element) ---
-  function renderImageFrame(ctx, imgElement, deviceFrameImg, coverUpImg, color, layout) {
+  function renderImageFrame(ctx, imgElement, deviceFrameImg, color, layout) {
     var canvas = ctx.canvas;
     ctx.fillStyle = color;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -1088,10 +1088,12 @@
 
     ctx.drawImage(deviceFrameImg, layout.frameX, layout.frameY, layout.frameW, layout.frameH);
 
-    if (layout.coverUp && coverUpImg) {
-      var coverW = coverUpImg.naturalWidth * layout.coverUp.scale;
-      var coverH = coverUpImg.naturalHeight * layout.coverUp.scale;
-      ctx.drawImage(coverUpImg, layout.coverUp.x, layout.coverUp.y, coverW, coverH);
+    if (layout.coverUp) {
+      var cu = layout.coverUp;
+      // Sample pixel color just left of the cover-up area to match the status bar background
+      var sample = ctx.getImageData(cu.x - 2, cu.y + Math.floor(cu.h / 2), 1, 1).data;
+      ctx.fillStyle = 'rgb(' + sample[0] + ',' + sample[1] + ',' + sample[2] + ')';
+      ctx.fillRect(cu.x, cu.y, cu.w, cu.h);
     }
   }
 
@@ -1112,11 +1114,10 @@
     outputCtx.imageSmoothingQuality = 'high';
 
     var deviceFrame = await loadImage(layout.frameImg);
-    var coverUpImg = layout.coverUp ? await loadImage(layout.coverUp.img) : null;
 
     var img = await loadImage(URL.createObjectURL(imgFile));
 
-    renderImageFrame(renderCtx, img, deviceFrame, coverUpImg, color, layout);
+    renderImageFrame(renderCtx, img, deviceFrame, color, layout);
     scaleToOutput(outputCtx, renderCanvas, color);
 
     URL.revokeObjectURL(img.src);
@@ -1127,7 +1128,7 @@
   }
 
   // --- Render frame (device-agnostic) ---
-  function renderFrame(ctx, videoElement, deviceFrameImg, coverUpImg, color, layout) {
+  function renderFrame(ctx, videoElement, deviceFrameImg, color, layout) {
     var canvas = ctx.canvas;
 
     // 1. Background
@@ -1176,11 +1177,12 @@
     // 3. Device frame
     ctx.drawImage(deviceFrameImg, layout.frameX, layout.frameY, layout.frameW, layout.frameH);
 
-    // 4. Cover-up (Apple only)
-    if (layout.coverUp && coverUpImg) {
-      var coverW = coverUpImg.naturalWidth * layout.coverUp.scale;
-      var coverH = coverUpImg.naturalHeight * layout.coverUp.scale;
-      ctx.drawImage(coverUpImg, layout.coverUp.x, layout.coverUp.y, coverW, coverH);
+    // 4. Cover-up (Apple only) — sample surrounding color to hide recording indicator
+    if (layout.coverUp) {
+      var cu = layout.coverUp;
+      var sample = ctx.getImageData(cu.x - 2, cu.y + Math.floor(cu.h / 2), 1, 1).data;
+      ctx.fillStyle = 'rgb(' + sample[0] + ',' + sample[1] + ',' + sample[2] + ')';
+      ctx.fillRect(cu.x, cu.y, cu.w, cu.h);
     }
   }
 
@@ -1206,7 +1208,6 @@
 
     // Load assets
     var deviceFrame = await loadImage(layout.frameImg);
-    var coverUpImg = layout.coverUp ? await loadImage(layout.coverUp.img) : null;
 
     // MediaRecorder captures from the scaled output canvas.
     // captureStream(0) = manual mode: frames captured only when we call requestFrame().
@@ -1271,7 +1272,7 @@
     var frameCount = 0;
 
     await playVideoAndCapture(video, spd, function(vid) {
-      renderFrame(renderCtx, vid, deviceFrame, coverUpImg, color, layout);
+      renderFrame(renderCtx, vid, deviceFrame, color, layout);
       scaleToOutput(outputCtx, renderCanvas, color);
       emitFrame();
 

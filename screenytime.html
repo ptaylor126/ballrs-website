@@ -463,7 +463,7 @@
       frameW: 1310, frameH: 2710,
       screenWPct: 93, screenHPct: 98,
       cornerRadius: 175, padding: 80,
-      coverUp: null,
+      coverUp: { img: 'cover-up.png', scale: 1.53, xOffset: 80, yOffset: 40 },
       renderScale: 1,
       variants: [
         { name: 'Natural', img: 'device-frame-natural.png' },
@@ -511,6 +511,16 @@
     var frameX = padding;
     var frameY = padding;
 
+    var coverUp = null;
+    if (d.coverUp) {
+      coverUp = {
+        img: d.coverUp.img,
+        scale: d.coverUp.scale,
+        x: screenX + d.coverUp.xOffset * s,
+        y: screenY + d.coverUp.yOffset * s,
+      };
+    }
+
     return {
       frameImg: variant.img,
       frameW: frameW, frameH: frameH,
@@ -519,7 +529,7 @@
       screenX: screenX, screenY: screenY,
       frameX: frameX, frameY: frameY,
       cornerRadius: cornerRadius,
-      coverUp: null,
+      coverUp: coverUp,
     };
   }
 
@@ -964,6 +974,51 @@
     });
   }
 
+  // Play a video in real-time and call onFrame for each decoded frame.
+  // Uses requestVideoFrameCallback (Chrome/Edge) for precise per-frame capture,
+  // falls back to setInterval for other browsers.
+  function playVideoAndCapture(video, playbackRate, onFrame) {
+    video.playbackRate = playbackRate;
+
+    return new Promise(function(resolve, reject) {
+      var done = false;
+
+      function finish() {
+        if (done) return;
+        done = true;
+        // Capture the final frame
+        onFrame(video);
+        resolve();
+      }
+
+      video.addEventListener('ended', finish, { once: true });
+
+      if ('requestVideoFrameCallback' in HTMLVideoElement.prototype) {
+        function rvfcCallback() {
+          if (done) return;
+          onFrame(video);
+          video.requestVideoFrameCallback(rvfcCallback);
+        }
+        video.requestVideoFrameCallback(rvfcCallback);
+      } else {
+        // Fallback: capture at ~30fps
+        var iv = setInterval(function() {
+          if (done || video.ended || video.paused) {
+            clearInterval(iv);
+            return;
+          }
+          onFrame(video);
+        }, 33);
+        video.addEventListener('ended', function() { clearInterval(iv); }, { once: true });
+      }
+
+      video.play().catch(function(err) {
+        done = true;
+        reject(err);
+      });
+    });
+  }
+
   // Scale render canvas to output canvas, preserving aspect ratio and centering
   function scaleToOutput(outputCtx, renderCanvas, color) {
     var scale = Math.min(OUTPUT_W / renderCanvas.width, OUTPUT_H / renderCanvas.height) * OUTPUT_PHONE_SCALE;
@@ -1129,7 +1184,9 @@
     }
   }
 
-  // --- Main processing (two-canvas approach) ---
+  // --- Main processing (real-time playback approach) ---
+  // Plays videos natively and captures each decoded frame via requestVideoFrameCallback.
+  // This avoids frame-by-frame seeking which causes glitches from keyframe-only access.
   async function processVideo(vFile, color, spd, deviceKey, variantIdx, icFile, ecFile) {
     var layout = getDeviceLayout(deviceKey, variantIdx);
 
@@ -1151,17 +1208,6 @@
     var deviceFrame = await loadImage(layout.frameImg);
     var coverUpImg = layout.coverUp ? await loadImage(layout.coverUp.img) : null;
 
-    // Set up video
-    var video = document.createElement('video');
-    video.src = URL.createObjectURL(vFile);
-    video.muted = true;
-    video.playsInline = true;
-    await waitForVideoReady(video);
-
-    var fps = 30;
-    var duration = video.duration;
-    var totalFrames = Math.ceil((duration / spd) * fps);
-
     // MediaRecorder captures from the scaled output canvas.
     // captureStream(0) = manual mode: frames captured only when we call requestFrame().
     var stream = outputCanvas.captureStream(0);
@@ -1175,45 +1221,82 @@
 
     mediaRecorder.start(100);
 
-    // Helper: draw one frame to MediaRecorder
-    function captureFrame() {
+    // Emit a single frame to the MediaRecorder stream
+    function emitFrame() {
       if (videoTrack.requestFrame) videoTrack.requestFrame();
-      return new Promise(function(resolve) { requestAnimationFrame(resolve); });
     }
 
-    // Play intro card first (if provided)
+    // Helper: render a full-screen video (for intro/end cards) to output canvas
+    function renderFullScreen(vid) {
+      outputCtx.fillStyle = color;
+      outputCtx.fillRect(0, 0, OUTPUT_W, OUTPUT_H);
+      var aspect = vid.videoWidth / vid.videoHeight;
+      var outAspect = OUTPUT_W / OUTPUT_H;
+      var dw, dh, dx, dy;
+      if (aspect > outAspect) {
+        dw = OUTPUT_W; dh = OUTPUT_W / aspect;
+        dx = 0; dy = (OUTPUT_H - dh) / 2;
+      } else {
+        dh = OUTPUT_H; dw = OUTPUT_H * aspect;
+        dx = (OUTPUT_W - dw) / 2; dy = 0;
+      }
+      outputCtx.drawImage(vid, dx, dy, dw, dh);
+      emitFrame();
+    }
+
+    // --- Intro card (if provided) ---
     if (icFile) {
       progressText.textContent = 'Rendering intro card...';
-      await renderFullScreenVideoOffline(icFile, outputCanvas, outputCtx, color, fps, captureFrame);
+      var introVid = document.createElement('video');
+      introVid.src = URL.createObjectURL(icFile);
+      introVid.muted = true;
+      introVid.playsInline = true;
+      await waitForVideoReady(introVid);
+
+      await playVideoAndCapture(introVid, 1, function(vid) {
+        renderFullScreen(vid);
+      });
+      introVid.pause();
+      URL.revokeObjectURL(introVid.src);
     }
 
-    // Frame-by-frame rendering (offline — no real-time playback)
-    // Seek to each frame position, draw, advance. Slower but glitch-free.
-    video.pause();
-    var sourceStep = (1 / fps) * spd; // source time advance per output frame
-    var sourceTime = 0;
+    // --- Main video (with device frame, at selected speed) ---
+    var video = document.createElement('video');
+    video.src = URL.createObjectURL(vFile);
+    video.muted = true;
+    video.playsInline = true;
+    await waitForVideoReady(video);
+
+    var estimatedFrames = Math.ceil((video.duration / spd) * 30);
     var frameCount = 0;
 
-    while (sourceTime < video.duration) {
-      video.currentTime = sourceTime;
-      await new Promise(function(resolve) { video.onseeked = resolve; });
-
-      renderFrame(renderCtx, video, deviceFrame, coverUpImg, color, layout);
+    await playVideoAndCapture(video, spd, function(vid) {
+      renderFrame(renderCtx, vid, deviceFrame, coverUpImg, color, layout);
       scaleToOutput(outputCtx, renderCanvas, color);
-      await captureFrame();
+      emitFrame();
 
       frameCount++;
-      sourceTime += sourceStep;
-
-      var pct = Math.min(100, Math.round((frameCount / totalFrames) * 100));
+      var pct = Math.min(100, Math.round((vid.currentTime / vid.duration) * 100));
       progressFill.style.width = pct + '%';
-      progressText.textContent = 'Processing frame ' + frameCount + ' of ' + totalFrames;
-    }
+      progressText.textContent = 'Processing frame ' + frameCount + ' of ~' + estimatedFrames;
+    });
+    video.pause();
+    URL.revokeObjectURL(video.src);
 
-    // End card (if provided)
+    // --- End card (if provided) ---
     if (ecFile) {
       progressText.textContent = 'Rendering end card...';
-      await renderFullScreenVideoOffline(ecFile, outputCanvas, outputCtx, color, fps, captureFrame);
+      var endVid = document.createElement('video');
+      endVid.src = URL.createObjectURL(ecFile);
+      endVid.muted = true;
+      endVid.playsInline = true;
+      await waitForVideoReady(endVid);
+
+      await playVideoAndCapture(endVid, 1, function(vid) {
+        renderFullScreen(vid);
+      });
+      endVid.pause();
+      URL.revokeObjectURL(endVid.src);
     }
 
     // Wait for MediaRecorder to finalize
@@ -1223,59 +1306,8 @@
       if (mediaRecorder.state === 'recording') mediaRecorder.stop();
     });
 
-    // Clean up
-    video.pause();
-    URL.revokeObjectURL(video.src);
-
     var mimeType = mediaRecorder.mimeType || 'video/webm';
     return new Blob(chunks, { type: mimeType });
-  }
-
-  // --- Full-screen video renderer (used for intro card and end card) ---
-  // Renders directly to the output canvas at full 1080×1920 (no device frame).
-  // Uses frame-by-frame seeking (offline) for glitch-free output.
-  async function renderFullScreenVideoOffline(file, outputCanvas, outputCtx, color, fps, captureFrame) {
-    var vid = document.createElement('video');
-    vid.src = URL.createObjectURL(file);
-    vid.muted = true;
-    vid.playsInline = true;
-    await waitForVideoReady(vid);
-
-    vid.pause();
-    var step = 1 / fps;
-    var t = 0;
-
-    while (t < vid.duration) {
-      vid.currentTime = t;
-      await new Promise(function(resolve) { vid.onseeked = resolve; });
-
-      outputCtx.fillStyle = color;
-      outputCtx.fillRect(0, 0, OUTPUT_W, OUTPUT_H);
-
-      var aspect = vid.videoWidth / vid.videoHeight;
-      var outAspect = OUTPUT_W / OUTPUT_H;
-      var drawW, drawH, drawX, drawY;
-
-      if (aspect > outAspect) {
-        drawW = OUTPUT_W;
-        drawH = OUTPUT_W / aspect;
-        drawX = 0;
-        drawY = (OUTPUT_H - drawH) / 2;
-      } else {
-        drawH = OUTPUT_H;
-        drawW = OUTPUT_H * aspect;
-        drawX = (OUTPUT_W - drawW) / 2;
-        drawY = 0;
-      }
-
-      outputCtx.drawImage(vid, drawX, drawY, drawW, drawH);
-      await captureFrame();
-
-      t += step;
-    }
-
-    vid.pause();
-    URL.revokeObjectURL(vid.src);
   }
 
 })();

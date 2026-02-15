@@ -463,7 +463,7 @@
       frameW: 1310, frameH: 2710,
       screenWPct: 93, screenHPct: 98,
       cornerRadius: 175, padding: 80,
-      coverUp: { w: 190, h: 89, xOffset: 80, yOffset: 40 },
+      coverUp: { w: 350, h: 130, xOffset: 0, yOffset: 0 },
       renderScale: 1,
       variants: [
         { name: 'Natural', img: 'device-frame-natural.png' },
@@ -1084,17 +1084,18 @@
     }
 
     ctx.drawImage(imgElement, drawX, drawY, drawW, drawH);
-    ctx.restore();
 
-    ctx.drawImage(deviceFrameImg, layout.frameX, layout.frameY, layout.frameW, layout.frameH);
-
+    // Cover-up (Apple only) — drawn inside the rounded clip so it can't bleed onto the frame
     if (layout.coverUp) {
       var cu = layout.coverUp;
-      // Sample pixel color just left of the cover-up area to match the status bar background
-      var sample = ctx.getImageData(cu.x - 2, cu.y + Math.floor(cu.h / 2), 1, 1).data;
+      var sample = ctx.getImageData(cu.x + cu.w + 2, cu.y + Math.floor(cu.h / 2), 1, 1).data;
       ctx.fillStyle = 'rgb(' + sample[0] + ',' + sample[1] + ',' + sample[2] + ')';
       ctx.fillRect(cu.x, cu.y, cu.w, cu.h);
     }
+
+    ctx.restore();
+
+    ctx.drawImage(deviceFrameImg, layout.frameX, layout.frameY, layout.frameW, layout.frameH);
   }
 
   // --- Process image (single frame → PNG) ---
@@ -1172,18 +1173,19 @@
     }
 
     ctx.drawImage(videoElement, drawX, drawY, drawW, drawH);
+
+    // Cover-up (Apple only) — drawn inside the rounded clip so it can't bleed onto the frame
+    if (layout.coverUp) {
+      var cu = layout.coverUp;
+      var sample = ctx.getImageData(cu.x + cu.w + 2, cu.y + Math.floor(cu.h / 2), 1, 1).data;
+      ctx.fillStyle = 'rgb(' + sample[0] + ',' + sample[1] + ',' + sample[2] + ')';
+      ctx.fillRect(cu.x, cu.y, cu.w, cu.h);
+    }
+
     ctx.restore();
 
     // 3. Device frame
     ctx.drawImage(deviceFrameImg, layout.frameX, layout.frameY, layout.frameW, layout.frameH);
-
-    // 4. Cover-up (Apple only) — sample surrounding color to hide recording indicator
-    if (layout.coverUp) {
-      var cu = layout.coverUp;
-      var sample = ctx.getImageData(cu.x - 2, cu.y + Math.floor(cu.h / 2), 1, 1).data;
-      ctx.fillStyle = 'rgb(' + sample[0] + ',' + sample[1] + ',' + sample[2] + ')';
-      ctx.fillRect(cu.x, cu.y, cu.w, cu.h);
-    }
   }
 
   // --- Main processing (real-time playback approach) ---

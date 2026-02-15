@@ -1084,18 +1084,31 @@
     }
 
     ctx.drawImage(imgElement, drawX, drawY, drawW, drawH);
-
-    // Cover-up (Apple only) — drawn inside the rounded clip so it can't bleed onto the frame
-    if (layout.coverUp) {
-      var cu = layout.coverUp;
-      var sample = ctx.getImageData(cu.x + cu.w + 2, cu.y + Math.floor(cu.h / 2), 1, 1).data;
-      ctx.fillStyle = 'rgb(' + sample[0] + ',' + sample[1] + ',' + sample[2] + ')';
-      ctx.fillRect(cu.x, cu.y, cu.w, cu.h);
-    }
-
     ctx.restore();
 
     ctx.drawImage(deviceFrameImg, layout.frameX, layout.frameY, layout.frameW, layout.frameH);
+
+    // Cover-up (Apple only) — on top of everything, clipped to screen area
+    if (layout.coverUp) {
+      var cu = layout.coverUp;
+      var sample = ctx.getImageData(cu.x + cu.w + 2, cu.y + Math.floor(cu.h / 2), 1, 1).data;
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+      ctx.clip();
+      ctx.fillStyle = 'rgb(' + sample[0] + ',' + sample[1] + ',' + sample[2] + ')';
+      ctx.fillRect(cu.x, cu.y, cu.w, cu.h);
+      ctx.restore();
+    }
   }
 
   // --- Process image (single frame → PNG) ---
@@ -1173,19 +1186,32 @@
     }
 
     ctx.drawImage(videoElement, drawX, drawY, drawW, drawH);
-
-    // Cover-up (Apple only) — drawn inside the rounded clip so it can't bleed onto the frame
-    if (layout.coverUp) {
-      var cu = layout.coverUp;
-      var sample = ctx.getImageData(cu.x + cu.w + 2, cu.y + Math.floor(cu.h / 2), 1, 1).data;
-      ctx.fillStyle = 'rgb(' + sample[0] + ',' + sample[1] + ',' + sample[2] + ')';
-      ctx.fillRect(cu.x, cu.y, cu.w, cu.h);
-    }
-
     ctx.restore();
 
     // 3. Device frame
     ctx.drawImage(deviceFrameImg, layout.frameX, layout.frameY, layout.frameW, layout.frameH);
+
+    // 4. Cover-up (Apple only) — on top of everything, clipped to screen area
+    if (layout.coverUp) {
+      var cu = layout.coverUp;
+      var sample = ctx.getImageData(cu.x + cu.w + 2, cu.y + Math.floor(cu.h / 2), 1, 1).data;
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+      ctx.clip();
+      ctx.fillStyle = 'rgb(' + sample[0] + ',' + sample[1] + ',' + sample[2] + ')';
+      ctx.fillRect(cu.x, cu.y, cu.w, cu.h);
+      ctx.restore();
+    }
   }
 
   // --- Main processing (real-time playback approach) ---

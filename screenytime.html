@@ -463,7 +463,7 @@
       frameW: 1310, frameH: 2710,
       screenWPct: 93, screenHPct: 98,
       cornerRadius: 175, padding: 80,
-      coverUp: { w: 350, h: 130, xOffset: 0, yOffset: 0 },
+      coverUp: { w: 350, h: 130, xOffset: 0, yOffset: -4 },
       renderScale: 1,
       variants: [
         { name: 'Natural', img: 'device-frame-natural.png' },
@@ -1106,7 +1106,7 @@
       ctx.closePath();
       ctx.clip();
       ctx.fillStyle = 'rgb(' + sample[0] + ',' + sample[1] + ',' + sample[2] + ')';
-      ctx.fillRect(cu.x, cu.y, cu.w, cu.h);
+      ctx.fillRect(cu.x - r, cu.y - r, cu.w + r, cu.h + r);
       ctx.restore();
     }
   }
@@ -1209,7 +1209,7 @@
       ctx.closePath();
       ctx.clip();
       ctx.fillStyle = 'rgb(' + sample[0] + ',' + sample[1] + ',' + sample[2] + ')';
-      ctx.fillRect(cu.x, cu.y, cu.w, cu.h);
+      ctx.fillRect(cu.x - r, cu.y - r, cu.w + r, cu.h + r);
       ctx.restore();
     }
   }

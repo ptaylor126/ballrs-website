@@ -463,7 +463,6 @@
       frameW: 1310, frameH: 2710,
       screenWPct: 93, screenHPct: 98,
       cornerRadius: 175, padding: 80,
-      coverUp: { w: 450, h: 170, xOffset: 0, yOffset: -4 },
       renderScale: 1,
       variants: [
         { name: 'Natural', img: 'device-frame-natural.png' },
@@ -476,7 +475,6 @@
       frameW: 353, frameH: 745,
       screenWPct: 96, screenHPct: 98,
       cornerRadius: 53, padding: 15,
-      coverUp: null,
       renderScale: 4,
       variants: [
         { name: 'Obsidian', img: 'device-frame-android-obsidan.png' },
@@ -511,16 +509,6 @@
     var frameX = padding;
     var frameY = padding;
 
-    var coverUp = null;
-    if (d.coverUp) {
-      coverUp = {
-        x: screenX + d.coverUp.xOffset * s,
-        y: screenY + d.coverUp.yOffset * s,
-        w: d.coverUp.w * s,
-        h: d.coverUp.h * s,
-      };
-    }
-
     return {
       frameImg: variant.img,
       frameW: frameW, frameH: frameH,
@@ -529,7 +517,6 @@
       screenX: screenX, screenY: screenY,
       frameX: frameX, frameY: frameY,
       cornerRadius: cornerRadius,
-      coverUp: coverUp,
     };
   }
 
@@ -1087,28 +1074,6 @@
     ctx.restore();
 
     ctx.drawImage(deviceFrameImg, layout.frameX, layout.frameY, layout.frameW, layout.frameH);
-
-    // Cover-up (Apple only) — on top of everything, clipped to screen area
-    if (layout.coverUp) {
-      var cu = layout.coverUp;
-      var sample = ctx.getImageData(cu.x + cu.w + 2, cu.y + Math.floor(cu.h / 2), 1, 1).data;
-      ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(x + r, y);
-      ctx.lineTo(x + w - r, y);
-      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-      ctx.lineTo(x + w, y + h - r);
-      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-      ctx.lineTo(x + r, y + h);
-      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-      ctx.lineTo(x, y + r);
-      ctx.quadraticCurveTo(x, y, x + r, y);
-      ctx.closePath();
-      ctx.clip();
-      ctx.fillStyle = 'rgb(' + sample[0] + ',' + sample[1] + ',' + sample[2] + ')';
-      ctx.fillRect(cu.x - r, cu.y - r, cu.w + r, cu.h + r);
-      ctx.restore();
-    }
   }
 
   // --- Process image (single frame → PNG) ---
@@ -1190,28 +1155,6 @@
 
     // 3. Device frame
     ctx.drawImage(deviceFrameImg, layout.frameX, layout.frameY, layout.frameW, layout.frameH);
-
-    // 4. Cover-up (Apple only) — on top of everything, clipped to screen area
-    if (layout.coverUp) {
-      var cu = layout.coverUp;
-      var sample = ctx.getImageData(cu.x + cu.w + 2, cu.y + Math.floor(cu.h / 2), 1, 1).data;
-      ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(x + r, y);
-      ctx.lineTo(x + w - r, y);
-      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-      ctx.lineTo(x + w, y + h - r);
-      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-      ctx.lineTo(x + r, y + h);
-      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-      ctx.lineTo(x, y + r);
-      ctx.quadraticCurveTo(x, y, x + r, y);
-      ctx.closePath();
-      ctx.clip();
-      ctx.fillStyle = 'rgb(' + sample[0] + ',' + sample[1] + ',' + sample[2] + ')';
-      ctx.fillRect(cu.x - r, cu.y - r, cu.w + r, cu.h + r);
-      ctx.restore();
-    }
   }
 
   // --- Main processing (real-time playback approach) ---

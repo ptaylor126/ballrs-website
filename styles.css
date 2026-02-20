@@ -244,9 +244,14 @@ body {
 }
 
 .modes-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 32px;
+}
+
+.modes-grid .mode-card {
+  width: calc((100% - 64px) / 3);
 }
 
 .mode-card {
@@ -611,8 +616,8 @@ body {
     font-size: 11px;
   }
 
-  .modes-grid {
-    grid-template-columns: 1fr;
+  .modes-grid .mode-card {
+    width: 100%;
   }
 
   .social-grid {

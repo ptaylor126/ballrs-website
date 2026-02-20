@@ -1062,12 +1062,13 @@
     var screenAspect = w / h;
     var drawW, drawH, drawX, drawY;
 
+    // Object-fit contain: show full image, letterbox/pillarbox if needed
     if (imgAspect > screenAspect) {
-      drawH = h; drawW = h * imgAspect;
-      drawX = x + (w - drawW) / 2; drawY = y;
-    } else {
       drawW = w; drawH = w / imgAspect;
       drawX = x; drawY = y + (h - drawH) / 2;
+    } else {
+      drawH = h; drawW = h * imgAspect;
+      drawX = x + (w - drawW) / 2; drawY = y;
     }
 
     ctx.drawImage(imgElement, drawX, drawY, drawW, drawH);
@@ -1133,21 +1134,21 @@
     ctx.closePath();
     ctx.clip();
 
-    // Object-fit cover: scales any input resolution to fill the screen area
+    // Object-fit contain: show full video, letterbox/pillarbox if needed
     var videoAspect = videoElement.videoWidth / videoElement.videoHeight;
     var screenAspect = w / h;
     var drawW, drawH, drawX, drawY;
 
     if (videoAspect > screenAspect) {
-      drawH = h;
-      drawW = h * videoAspect;
-      drawX = x + (w - drawW) / 2;
-      drawY = y;
-    } else {
       drawW = w;
       drawH = w / videoAspect;
       drawX = x;
       drawY = y + (h - drawH) / 2;
+    } else {
+      drawH = h;
+      drawW = h * videoAspect;
+      drawX = x + (w - drawW) / 2;
+      drawY = y;
     }
 
     ctx.drawImage(videoElement, drawX, drawY, drawW, drawH);

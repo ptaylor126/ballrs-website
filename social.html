@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ballrs — Video Producer</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #F5F2EB;
+      color: #1A1A1A;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 24px 20px 80px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+      padding-top: 20px;
+    }
+
+    .header h1 {
+      font-weight: 900;
+      font-size: 32px;
+      letter-spacing: -0.5px;
+    }
+
+    .header p {
+      color: #6B7280;
+      margin-top: 4px;
+      font-size: 14px;
+    }
+
+    /* Neubrutalist card */
+    .card {
+      background: #fff;
+      border: 2px solid #1A1A1A;
+      border-radius: 12px;
+      padding: 24px;
+      position: relative;
+      margin-bottom: 20px;
+    }
+    .card::after {
+      content: '';
+      position: absolute;
+      top: 4px; left: 4px;
+      width: 100%; height: 100%;
+      background: #1A1A1A;
+      border-radius: 12px;
+      z-index: -1;
+    }
+
+    .card-title {
+      font-weight: 900;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #6B7280;
+      margin-bottom: 16px;
+    }
+
+    /* Sport pills */
+    .sport-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .sport-btn {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 900;
+      font-size: 16px;
+      padding: 16px;
+      border: 2px solid #1A1A1A;
+      border-radius: 12px;
+      cursor: pointer;
+      position: relative;
+      color: #fff;
+      transition: transform 0.1s;
+    }
+    .sport-btn::after {
+      content: '';
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 100%; height: 100%;
+      background: #1A1A1A;
+      border-radius: 12px;
+      z-index: -1;
+    }
+    .sport-btn:hover { transform: translate(-1px, -1px); }
+    .sport-btn:active { transform: translate(2px, 2px); }
+    
+    .sport-btn.nba { background: #E07A3D; }
+    .sport-btn.epl { background: #A17AFB; }
+    .sport-btn.nfl { background: #3BA978; }
+    .sport-btn.mlb { background: #7A93D2; }
+    .sport-btn.selected { outline: 3px solid #1ABC9C; outline-offset: 2px; }
+
+    /* Question display */
+    .question-box {
+      font-weight: 700;
+      font-size: 22px;
+      line-height: 1.4;
+      margin-bottom: 20px;
+    }
+
+    .options-grid {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .option-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: #F5F2EB;
+      border: 2px solid #1A1A1A;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 16px;
+    }
+    .option-row.correct {
+      background: #d4f5e9;
+      border-color: #1ABC9C;
+    }
+
+    .option-letter {
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 6px;
+      border: 2px solid #1A1A1A;
+      font-weight: 900;
+      font-size: 16px;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .fact-box {
+      background: #F5F2EB;
+      border: 2px solid #1A1A1A;
+      border-radius: 8px;
+      padding: 16px;
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+    .fact-box .label {
+      font-weight: 900;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #6B7280;
+      margin-bottom: 6px;
+    }
+
+    .verified-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .verified-badge.yes { background: #d4f5e9; color: #1ABC9C; }
+    .verified-badge.no { background: #ffe0e0; color: #E53935; }
+
+    /* Buttons */
+    .btn {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 900;
+      font-size: 16px;
+      padding: 14px 28px;
+      border: 2px solid #1A1A1A;
+      border-radius: 12px;
+      cursor: pointer;
+      position: relative;
+      color: #fff;
+      width: 100%;
+      transition: transform 0.1s;
+    }
+    .btn::after {
+      content: '';
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 100%; height: 100%;
+      background: #1A1A1A;
+      border-radius: 12px;
+      z-index: -1;
+    }
+    .btn:hover { transform: translate(-1px, -1px); }
+    .btn:active { transform: translate(2px, 2px); }
+    
+    .btn-teal { background: #1ABC9C; }
+    .btn-yellow { background: #F2C94C; color: #1A1A1A; }
+    .btn-red { background: #E53935; }
+
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    /* Steps */
+    .step {
+      display: none;
+    }
+    .step.active {
+      display: block;
+    }
+
+    .step-indicator {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+    .step-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: #E8E8E8;
+      border: 2px solid #1A1A1A;
+    }
+    .step-dot.active { background: #1ABC9C; }
+    .step-dot.done { background: #1A1A1A; }
+
+    /* Voiceover section */
+    .voiceover-text {
+      font-size: 20px;
+      font-weight: 700;
+      font-style: italic;
+      text-align: center;
+      padding: 24px;
+      background: #F5F2EB;
+      border: 2px solid #1A1A1A;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      cursor: pointer;
+      user-select: all;
+    }
+    .voiceover-text:hover { background: #eae7e0; }
+
+    /* Image checklist */
+    .image-checklist {
+      display: grid;
+      gap: 10px;
+    }
+    .image-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: #F5F2EB;
+      border: 2px solid #1A1A1A;
+      border-radius: 8px;
+      font-weight: 700;
+    }
+
+    /* Render command */
+    .render-cmd {
+      background: #1A1A1A;
+      color: #1ABC9C;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      word-break: break-all;
+      cursor: pointer;
+      margin-bottom: 16px;
+      border: 2px solid #1A1A1A;
+    }
+    .render-cmd:hover { color: #fff; }
+
+    /* Captions */
+    .caption-block {
+      background: #F5F2EB;
+      border: 2px solid #1A1A1A;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+      cursor: pointer;
+    }
+    .caption-block:hover { background: #eae7e0; }
+    .caption-block .platform {
+      font-weight: 900;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #6B7280;
+      margin-bottom: 8px;
+    }
+    .caption-block pre {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
+
+    .copy-toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1A1A1A;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 999;
+    }
+    .copy-toast.show { opacity: 1; }
+
+    .hint {
+      font-size: 13px;
+      color: #6B7280;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>BALLRS VIDEO PRODUCER</h1>
+    <p>Pick a sport → Get a question → Make the video</p>
+  </div>
+
+  <div class="step-indicator" id="stepIndicator"></div>
+
+  <!-- STEP 1: Pick Sport -->
+  <div class="step active" id="step1">
+    <div class="card">
+      <div class="card-title">Step 1 — Pick a Sport</div>
+      <div class="sport-grid">
+        <button class="sport-btn nba" onclick="pickSport('NBA')">🏀 NBA</button>
+        <button class="sport-btn epl" onclick="pickSport('PREMIER LEAGUE')">⚽ PREMIER LEAGUE</button>
+        <button class="sport-btn nfl" onclick="pickSport('NFL')">🏈 NFL</button>
+        <button class="sport-btn mlb" onclick="pickSport('MLB')">⚾ MLB</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: Question -->
+  <div class="step" id="step2">
+    <div class="card">
+      <div class="card-title">Step 2 — Your Question</div>
+      <div class="question-box" id="questionText"></div>
+      <div class="options-grid" id="optionsGrid"></div>
+      <div class="fact-box">
+        <div class="label">💡 Reveal Fact</div>
+        <div id="factText"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <span id="verifiedBadge"></span>
+        <span id="sourceText" style="font-size:12px;color:#6B7280;"></span>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-yellow" onclick="shuffleQuestion()">SHUFFLE</button>
+        <button class="btn btn-teal" onclick="goToStep(3)">USE THIS ONE →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: Voiceover -->
+  <div class="step" id="step3">
+    <div class="card">
+      <div class="card-title">Step 3 — Generate Voiceover</div>
+      <p style="margin-bottom:16px;">Copy this text and paste it into <strong>ElevenLabs</strong>:</p>
+      <div class="voiceover-text" id="voiceoverText" onclick="copyText(this.innerText, 'Voiceover text copied')"></div>
+      <p class="hint">Click the text to copy. Save the MP3 as <strong>public/audio/voiceover.mp3</strong></p>
+      <a href="https://elevenlabs.io" target="_blank" style="display:block;margin:16px 0;">
+        <button class="btn btn-yellow" style="pointer-events:none;">OPEN ELEVENLABS ↗</button>
+      </a>
+      <div class="btn-row">
+        <button class="btn btn-yellow" onclick="goToStep(2)">← BACK</button>
+        <button class="btn btn-teal" onclick="goToStep(4)">DONE →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: Images -->
+  <div class="step" id="step4">
+    <div class="card">
+      <div class="card-title">Step 4 — Get Player Images</div>
+      <p style="margin-bottom:16px;">Find an image of each player and save as <strong>A.png, B.png, C.png, D.png</strong> in <strong>~/quiz-images/</strong></p>
+      <div class="image-checklist" id="imageChecklist"></div>
+      <p class="hint" style="margin-top:12px;">Then run: <strong>python3 process-quiz-images.py ~/quiz-images/ ./public/episodes/</strong></p>
+      <div class="btn-row" style="margin-top:20px;">
+        <button class="btn btn-yellow" onclick="goToStep(3)">← BACK</button>
+        <button class="btn btn-teal" onclick="goToStep(5)">DONE →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 5: Render -->
+  <div class="step" id="step5">
+    <div class="card">
+      <div class="card-title">Step 5 — Render</div>
+      <p style="margin-bottom:16px;">Copy and run this command in your Remotion project:</p>
+      <div class="render-cmd" id="renderCmd" onclick="copyText(this.innerText, 'Render command copied')"></div>
+      <p class="hint">Click to copy. Run it in Terminal from your Remotion project folder.</p>
+      <div class="btn-row" style="margin-top:20px;">
+        <button class="btn btn-yellow" onclick="goToStep(4)">← BACK</button>
+        <button class="btn btn-teal" onclick="goToStep(6)">VIDEO READY →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 6: Post -->
+  <div class="step" id="step6">
+    <div class="card">
+      <div class="card-title">Step 6 — Post It</div>
+      <p style="margin-bottom:16px;">Click any caption to copy it:</p>
+      <div id="captions"></div>
+      <div class="caption-block" id="pinnedComment" onclick="copyText(this.querySelector('pre').innerText, 'Pinned comment copied')">
+        <div class="platform">📌 Pinned Comment</div>
+        <pre id="pinnedText"></pre>
+      </div>
+      <div class="btn-row" style="margin-top:20px;">
+        <button class="btn btn-teal" onclick="reset()">MAKE ANOTHER VIDEO</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="copy-toast" id="copyToast">Copied!</div>
+
+<script>
+const QUESTIONS = [
+  {"id":1,"sport":"NBA","sportEmoji":"🏀","accentColor":"#E07A3D","question":"Which of these players only made ONE 3-pointer in his entire NBA career?","optionA":"Shaq","optionB":"Ben Wallace","optionC":"Dwight Howard","optionD":"Andre Drummond","correctAnswer":"A","factText":"Shaq went 1-for-22 from three across 19 NBA seasons. His only make was a bank shot against the Bucks in 1996.","verified":true,"source":"StatMuse"},
+  {"id":2,"sport":"NBA","sportEmoji":"🏀","accentColor":"#E07A3D","question":"Which player grabbed 28 rebounds in a game without scoring a SINGLE point?","optionA":"Ben Wallace","optionB":"Dennis Rodman","optionC":"Dwight Howard","optionD":"Draymond Green","correctAnswer":"B","factText":"Rodman had 28 boards and 0 points for the Spurs against the Hornets on December 1, 1993. They still won 92-88.","verified":true,"source":"Basketball-Reference"},
+  {"id":3,"sport":"NBA","sportEmoji":"🏀","accentColor":"#E07A3D","question":"Which player played 28 MINUTES and recorded exactly ZERO in every single stat category?","optionA":"Tony Snell","optionB":"Kyle Singler","optionC":"Bruno Caboclo","optionD":"Hasheem Thabeet","correctAnswer":"A","factText":"Tony Snell played 28 minutes for the Bucks vs Jazz in 2017. 0 points. 0 rebounds. 0 assists. 0 steals. 0 blocks. A perfect zero.","verified":true,"source":"ThePlayoffs.news"},
+  {"id":4,"sport":"NBA","sportEmoji":"🏀","accentColor":"#E07A3D","question":"Which player fouled out of an NBA game in just 3 MINUTES?","optionA":"Dennis Rodman","optionB":"Bubba Wells","optionC":"Rasheed Wallace","optionD":"Bill Laimbeer","correctAnswer":"B","factText":"Bubba Wells fouled out in 3 minutes — an NBA record. He was sent in to intentionally foul Dennis Rodman because Rodman was terrible from the free throw line.","verified":true,"source":"Bleacher Report"},
+  {"id":5,"sport":"NBA","sportEmoji":"🏀","accentColor":"#E07A3D","question":"Where was Michael Jordan actually drafted in 1984?","optionA":"1st overall","optionB":"2nd overall","optionC":"3rd overall","optionD":"5th overall","correctAnswer":"C","factText":"The GOAT was picked THIRD. Hakeem Olajuwon went 1st and Sam Bowie went 2nd. Portland chose Bowie over Jordan.","verified":true,"source":"1984 NBA Draft"},
+  {"id":6,"sport":"NBA","sportEmoji":"🏀","accentColor":"#E07A3D","question":"Jayson Tatum has scored more Conference Finals points than which ENTIRE franchise's history?","optionA":"Charlotte Hornets","optionB":"LA Clippers","optionC":"Memphis Grizzlies","optionD":"Minnesota Timberwolves","correctAnswer":"B","factText":"One man: 636 points. The entire LA Clippers franchise: 622 points. One player outscored a whole organization.","verified":true,"source":"ThePlayoffs.news"},
+  {"id":7,"sport":"NBA","sportEmoji":"🏀","accentColor":"#E07A3D","question":"Wilt Chamberlain averaged 48.5 minutes per game in one season. How long is an actual NBA game?","optionA":"44 minutes","optionB":"46 minutes","optionC":"48 minutes","optionD":"50 minutes","correctAnswer":"C","factText":"An NBA game is 48 minutes. Wilt averaged MORE than a full game because of overtimes. He played nearly every second of every game that entire 1961-62 season.","verified":true,"source":"Multiple sources"},
+  {"id":8,"sport":"NBA","sportEmoji":"🏀","accentColor":"#E07A3D","question":"Which player got a triple-double WITHOUT scoring a single point?","optionA":"Ben Simmons","optionB":"Rajon Rondo","optionC":"Draymond Green","optionD":"Andre Kirilenko","correctAnswer":"C","factText":"Draymond had 11 rebounds, 10 assists, and 10 steals vs the Grizzlies in 2017. Zero points. The only non-scoring triple-double in NBA history.","verified":true,"source":"Sportskeeda"},
+  {"id":9,"sport":"NBA","sportEmoji":"🏀","accentColor":"#E07A3D","question":"Jose Calderon missed only 3 free throws in an ENTIRE season. How many did he make?","optionA":"98","optionB":"124","optionC":"151","optionD":"177","correctAnswer":"C","factText":"Calderon went 151-for-154 from the line in 2008-09 — a 98.1% season. Nobody has even cracked 96% since.","verified":true,"source":"2008-09 Raptors"},
+  {"id":10,"sport":"NBA","sportEmoji":"🏀","accentColor":"#E07A3D","question":"Which player racked up FORTY technical fouls in a single NBA season?","optionA":"Dennis Rodman","optionB":"Rasheed Wallace","optionC":"Draymond Green","optionD":"Charles Barkley","correctAnswer":"B","factText":"Rasheed Wallace got 40 techs in the 2000-01 season. The second-most ever? Also Rasheed Wallace.","verified":true,"source":"Bleacher Report"},
+  {"id":11,"sport":"NBA","sportEmoji":"🏀","accentColor":"#E07A3D","question":"Which of these legends was CUT from his high school basketball team?","optionA":"Kobe Bryant","optionB":"LeBron James","optionC":"Michael Jordan","optionD":"Larry Bird","correctAnswer":"C","factText":"Jordan didn't make the varsity team as a sophomore. He went home and cried. Then used it as motivation to become the greatest ever.","verified":true,"source":"Well-documented"},
+  {"id":12,"sport":"NBA","sportEmoji":"🏀","accentColor":"#E07A3D","question":"Who won the Slam Dunk Contest at just 5 FOOT 7?","optionA":"Muggsy Bogues","optionB":"Nate Robinson","optionC":"Spud Webb","optionD":"Allen Iverson","correctAnswer":"C","factText":"Spud Webb won the 1986 Dunk Contest at 5'7\" — beating his teammate Dominique Wilkins, one of the greatest dunkers ever, in the final.","verified":true,"source":"NBA.com"},
+  {"id":13,"sport":"PREMIER LEAGUE","sportEmoji":"⚽","accentColor":"#A17AFB","question":"Which of these players has the MOST yellow cards in Premier League history?","optionA":"Roy Keane","optionB":"Patrick Vieira","optionC":"Wayne Rooney","optionD":"Gareth Barry","correctAnswer":"D","factText":"Gareth Barry: 123 yellow cards across 653 appearances. More than Keane. More than Vieira. More than Rooney.","verified":true,"source":"StatMuse, Transfermarkt"},
+  {"id":14,"sport":"PREMIER LEAGUE","sportEmoji":"⚽","accentColor":"#A17AFB","question":"Which player played a full 90 minutes without touching the ball ONCE?","optionA":"Benzema","optionB":"Giroud","optionC":"Lukaku","optionD":"Haaland","correctAnswer":"B","factText":"Giroud played 90 minutes for Arsenal vs Real Madrid in the 2014 Champions League. Zero touches. Literally invisible.","verified":false,"source":"Verify exact match details"},
+  {"id":15,"sport":"PREMIER LEAGUE","sportEmoji":"⚽","accentColor":"#A17AFB","question":"Who scored the fastest hat-trick in PL history — in under 3 MINUTES?","optionA":"Robbie Fowler","optionB":"Sadio Mane","optionC":"Cole Palmer","optionD":"Sergio Aguero","correctAnswer":"B","factText":"Mane scored 3 goals in 2 minutes 56 seconds for Southampton vs Aston Villa in 2015. Fowler's 21-year record destroyed.","verified":true,"source":"Guinness World Records"},
+  {"id":16,"sport":"PREMIER LEAGUE","sportEmoji":"⚽","accentColor":"#A17AFB","question":"Which of these has scored the most Premier League OWN GOALS in history?","optionA":"Jamie Carragher","optionB":"Richard Dunne","optionC":"Phil Jones","optionD":"Martin Skrtel","correctAnswer":"B","factText":"Richard Dunne scored 10 Premier League own goals. A record absolutely nobody wants to hold.","verified":false,"source":"Verify exact number"},
+  {"id":17,"sport":"PREMIER LEAGUE","sportEmoji":"⚽","accentColor":"#A17AFB","question":"Who scored the fastest goal in PL history — in under 8 SECONDS?","optionA":"Ledley King","optionB":"Shane Long","optionC":"Alan Shearer","optionD":"Theo Walcott","correctAnswer":"B","factText":"Shane Long scored after 7.69 seconds for Southampton vs Watford in 2019. The ball barely left the center circle.","verified":true,"source":"Wikipedia PL records"},
+  {"id":18,"sport":"PREMIER LEAGUE","sportEmoji":"⚽","accentColor":"#A17AFB","question":"Derby County hold the record for fewest PL wins in a season. How many?","optionA":"0","optionB":"1","optionC":"3","optionD":"5","correctAnswer":"B","factText":"Derby won 1 game out of 38 in 2007-08. 11 points. 20 goals scored. 89 conceded. The worst PL season ever.","verified":true,"source":"Wikipedia PL records"},
+  {"id":19,"sport":"PREMIER LEAGUE","sportEmoji":"⚽","accentColor":"#A17AFB","question":"Which player scored in 11 CONSECUTIVE Premier League matches?","optionA":"Thierry Henry","optionB":"Jamie Vardy","optionC":"Ruud van Nistelrooy","optionD":"Mohamed Salah","correctAnswer":"B","factText":"Vardy scored in 11 straight PL games for Leicester in 2015. Same season they won the title at 5000-1 odds.","verified":true,"source":"Wikipedia PL records"},
+  {"id":20,"sport":"PREMIER LEAGUE","sportEmoji":"⚽","accentColor":"#A17AFB","question":"Which team went an ENTIRE season without losing — not even once?","optionA":"Man United 1999","optionB":"Arsenal 2004","optionC":"Chelsea 2005","optionD":"Liverpool 2020","correctAnswer":"B","factText":"Arsenal 2003-04: 26 wins, 12 draws, ZERO defeats. The Invincibles. Nobody has done it since.","verified":true,"source":"Well-established"},
+  {"id":21,"sport":"PREMIER LEAGUE","sportEmoji":"⚽","accentColor":"#A17AFB","question":"Which of these scored for 7 DIFFERENT PL clubs — more than anyone?","optionA":"Nicolas Anelka","optionB":"Craig Bellamy","optionC":"Peter Crouch","optionD":"Robbie Keane","correctAnswer":"B","factText":"Bellamy scored for Coventry, Newcastle, Blackburn, Liverpool, West Ham, Man City, and Cardiff. 7 clubs. Nobody has matched it.","verified":true,"source":"Wikipedia PL records"},
+  {"id":22,"sport":"PREMIER LEAGUE","sportEmoji":"⚽","accentColor":"#A17AFB","question":"Which player scored the most goals from OUTSIDE the box in PL history?","optionA":"Steven Gerrard","optionB":"Frank Lampard","optionC":"Paul Scholes","optionD":"David Beckham","correctAnswer":"B","factText":"Lampard scored 41 goals from outside the box. More than Scholes. More than Gerrard. More than Beckham. A midfielder who scored like a striker.","verified":true,"source":"Wikipedia PL records"},
+  {"id":23,"sport":"NFL","sportEmoji":"🏈","accentColor":"#3BA978","question":"Which of these QBs was UNDRAFTED — never picked by any team?","optionA":"Tony Romo","optionB":"Russell Wilson","optionC":"Dak Prescott","optionD":"Patrick Mahomes","correctAnswer":"A","factText":"Tony Romo went completely undrafted in 2003 and signed with the Cowboys as a free agent. Became a 4-time Pro Bowler.","verified":false,"source":"Verify Romo undrafted"},
+  {"id":24,"sport":"NFL","sportEmoji":"🏈","accentColor":"#3BA978","question":"The 2007 Patriots went 16-0 then LOST the Super Bowl. Who beat them?","optionA":"Pittsburgh Steelers","optionB":"New York Giants","optionC":"Green Bay Packers","optionD":"Indianapolis Colts","correctAnswer":"B","factText":"The 18-0 Patriots lost to the Giants 17-14. Eli Manning and David Tyree's helmet catch. The biggest upset in Super Bowl history.","verified":true,"source":"Super Bowl XLII"},
+  {"id":25,"sport":"NFL","sportEmoji":"🏈","accentColor":"#3BA978","question":"Which team was the FIRST to go 0-16 — losing every single game?","optionA":"New York Jets","optionB":"Detroit Lions","optionC":"Jacksonville Jaguars","optionD":"Houston Texans","correctAnswer":"B","factText":"The Detroit Lions went 0-16 in 2008. The first team in NFL history to lose every game in a 16-game season.","verified":true,"source":"Well-established"},
+  {"id":26,"sport":"NFL","sportEmoji":"🏈","accentColor":"#3BA978","question":"Which kicker nailed a 66-YARD field goal — the longest in NFL history?","optionA":"Adam Vinatieri","optionB":"Justin Tucker","optionC":"Matt Prater","optionD":"Sebastian Janikowski","correctAnswer":"B","factText":"Tucker hit a 66-yarder for the Ravens vs the Lions in 2021. It bounced off the crossbar and went in.","verified":false,"source":"Verify still the record"},
+  {"id":27,"sport":"NFL","sportEmoji":"🏈","accentColor":"#3BA978","question":"Which receiver caught 149 passes in a single season — an NFL record?","optionA":"Julio Jones","optionB":"Michael Thomas","optionC":"Davante Adams","optionD":"Cooper Kupp","correctAnswer":"B","factText":"Michael Thomas caught 149 passes for the Saints in 2019. They called him 'Can't Guard Mike.'","verified":false,"source":"Verify still the record"},
+  {"id":28,"sport":"MLB","sportEmoji":"⚾","accentColor":"#7A93D2","question":"Shohei Ohtani did something NO player had ever done. What was it?","optionA":"Hit 60 HRs in a season","optionB":"50 HRs AND 50 stolen bases in one season","optionC":"Won MVP unanimously twice","optionD":"Pitched and hit in the same All-Star Game","correctAnswer":"B","factText":"Ohtani hit 54 HRs and stole 59 bases in 2024. The first 50-50 season in MLB history.","verified":false,"source":"Verify exact numbers"},
+  {"id":29,"sport":"MLB","sportEmoji":"⚾","accentColor":"#7A93D2","question":"Remove ALL of Hank Aaron's 755 home runs. How many hits would he STILL have?","optionA":"1,800+","optionB":"2,400+","optionC":"3,000+","optionD":"3,500+","correctAnswer":"C","factText":"Aaron had 3,771 career hits. Subtract 755 homers and he still has 3,016 — enough for the 3,000-hit club on its own.","verified":false,"source":"Verify hit total"},
+  {"id":30,"sport":"MLB","sportEmoji":"⚾","accentColor":"#7A93D2","question":"Which pitcher threw the ONLY perfect game in World Series history?","optionA":"Sandy Koufax","optionB":"Don Larsen","optionC":"Nolan Ryan","optionD":"Randy Johnson","correctAnswer":"B","factText":"Don Larsen — Game 5, 1956 World Series. Yankees vs Dodgers. Nobody has done it in nearly 70 years.","verified":true,"source":"Well-established"},
+  {"id":31,"sport":"MLB","sportEmoji":"⚾","accentColor":"#7A93D2","question":"The Cubs won the 2016 World Series after a drought of how many YEARS?","optionA":"54 years","optionB":"71 years","optionC":"86 years","optionD":"108 years","correctAnswer":"D","factText":"108 years without a title. They came back from 3-1 down and won Game 7 in extra innings. The longest drought in baseball ended.","verified":true,"source":"Well-established"},
+  {"id":32,"sport":"MLB","sportEmoji":"⚾","accentColor":"#7A93D2","question":"Nolan Ryan's strikeout record is basically unreachable. How many does he have?","optionA":"4,136","optionB":"4,875","optionC":"5,714","optionD":"6,202","correctAnswer":"C","factText":"Ryan struck out 5,714 batters. 2nd place Randy Johnson has 4,875. The gap is 839 — about 3 full elite seasons.","verified":true,"source":"Well-established"},
+  {"id":33,"sport":"MLB","sportEmoji":"⚾","accentColor":"#7A93D2","question":"What is the largest contract in the history of ALL professional sports?","optionA":"$426 million","optionB":"$502 million","optionC":"$600 million","optionD":"$700 million","correctAnswer":"D","factText":"Shohei Ohtani signed a 10-year, $700 million deal with the Dodgers. Bigger than any NFL, NBA, or soccer contract. Ever.","verified":false,"source":"Verify still the largest"}
+];
+
+const SPORT_CONFIG = {
+  'NBA': { emoji: '🏀', color: '#E07A3D', folder: 'nba', hashtags: '#NBA #NBATrivia #basketball' },
+  'PREMIER LEAGUE': { emoji: '⚽', color: '#A17AFB', folder: 'epl', hashtags: '#PremierLeague #EPL #football #footballtrivia' },
+  'NFL': { emoji: '🏈', color: '#3BA978', folder: 'nfl', hashtags: '#NFL #NFLTrivia #football' },
+  'MLB': { emoji: '⚾', color: '#7A93D2', folder: 'mlb', hashtags: '#MLB #MLBTrivia #baseball' },
+};
+
+let currentStep = 1;
+let selectedSport = null;
+let currentQuestion = null;
+let episodeCounters = JSON.parse(localStorage.getItem('ballrs-ep-counters') || '{"nba":0,"epl":0,"nfl":0,"mlb":0}');
+
+function updateStepIndicator() {
+  const el = document.getElementById('stepIndicator');
+  el.innerHTML = '';
+  for (let i = 1; i <= 6; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'step-dot' + (i === currentStep ? ' active' : '') + (i < currentStep ? ' done' : '');
+    el.appendChild(dot);
+  }
+}
+
+function goToStep(n) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step' + n).classList.add('active');
+  currentStep = n;
+  updateStepIndicator();
+  window.scrollTo(0, 0);
+}
+
+function pickSport(sport) {
+  selectedSport = sport;
+  shuffleQuestion();
+  goToStep(2);
+}
+
+function shuffleQuestion() {
+  const pool = QUESTIONS.filter(q => q.sport === selectedSport);
+  currentQuestion = pool[Math.floor(Math.random() * pool.length)];
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = currentQuestion;
+  const cfg = SPORT_CONFIG[q.sport];
+  
+  document.getElementById('questionText').innerText = q.question;
+  
+  const grid = document.getElementById('optionsGrid');
+  grid.innerHTML = '';
+  ['A','B','C','D'].forEach(letter => {
+    const row = document.createElement('div');
+    row.className = 'option-row' + (q.correctAnswer === letter ? ' correct' : '');
+    
+    const letterEl = document.createElement('div');
+    letterEl.className = 'option-letter';
+    letterEl.style.background = cfg.color;
+    letterEl.innerText = letter;
+    
+    const nameEl = document.createElement('span');
+    nameEl.innerText = q['option' + letter] + (q.correctAnswer === letter ? ' ✓' : '');
+    
+    row.appendChild(letterEl);
+    row.appendChild(nameEl);
+    grid.appendChild(row);
+  });
+  
+  document.getElementById('factText').innerText = q.factText;
+  
+  const badge = document.getElementById('verifiedBadge');
+  badge.className = 'verified-badge ' + (q.verified ? 'yes' : 'no');
+  badge.innerText = q.verified ? '✓ Verified' : '⚠ Verify before posting';
+  document.getElementById('sourceText').innerText = q.source || '';
+  
+  // Voiceover
+  document.getElementById('voiceoverText').innerText = q.question;
+  
+  // Images
+  const checklist = document.getElementById('imageChecklist');
+  checklist.innerHTML = '';
+  ['A','B','C','D'].forEach(letter => {
+    const item = document.createElement('div');
+    item.className = 'image-item';
+    const letterEl = document.createElement('div');
+    letterEl.className = 'option-letter';
+    letterEl.style.background = cfg.color;
+    letterEl.innerText = letter;
+    const nameEl = document.createElement('span');
+    nameEl.innerText = q['option' + letter] + ' → save as ' + letter + '.png';
+    item.appendChild(letterEl);
+    item.appendChild(nameEl);
+    checklist.appendChild(item);
+  });
+  
+  // Render command
+  const epNum = (episodeCounters[cfg.folder] || 0) + 1;
+  const props = {
+    sport: q.sport,
+    sportEmoji: q.sportEmoji,
+    accentColor: q.accentColor,
+    question: q.question,
+    optionA: q.optionA,
+    optionB: q.optionB,
+    optionC: q.optionC,
+    optionD: q.optionD,
+    correctAnswer: q.correctAnswer,
+    factText: q.factText,
+    episodeNumber: epNum,
+  };
+  const cmd = `npx remotion render QuizRound out/quiz-${cfg.folder}-ep${epNum}.mp4 --props='${JSON.stringify(props)}'`;
+  document.getElementById('renderCmd').innerText = cmd;
+  
+  // Captions
+  const correctName = q['option' + q.correctAnswer];
+  const captionsEl = document.getElementById('captions');
+  captionsEl.innerHTML = '';
+  
+  const platforms = [
+    { name: 'TikTok', text: `${q.question} 👀\n\nDrop your answer ⬇️\n\n${cfg.hashtags} #sportstrivia #ballrs #fyp` },
+    { name: 'X / Twitter', text: `${q.question}\n\n👀\n\n${cfg.hashtags.split(' ')[0]}` },
+    { name: 'Instagram Reels', text: `${q.question} 👀\n\nAnswer in the video.\n\nDaily trivia at Ballrs — link in bio.` },
+    { name: 'YouTube Shorts (title)', text: q.question },
+  ];
+  
+  platforms.forEach(p => {
+    const block = document.createElement('div');
+    block.className = 'caption-block';
+    block.onclick = () => copyText(p.text, p.name + ' caption copied');
+    block.innerHTML = `<div class="platform">${p.name}</div><pre>${p.text}</pre>`;
+    captionsEl.appendChild(block);
+  });
+  
+  document.getElementById('pinnedText').innerText = `${correctName} 🔥 ${q.factText}`;
+}
+
+function copyText(text, message) {
+  navigator.clipboard.writeText(text).then(() => {
+    const toast = document.getElementById('copyToast');
+    toast.innerText = message || 'Copied!';
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 1500);
+  });
+}
+
+function reset() {
+  selectedSport = null;
+  currentQuestion = null;
+  goToStep(1);
+}
+
+updateStepIndicator();
+</script>
+
+</body>
+</html>

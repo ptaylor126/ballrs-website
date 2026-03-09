@@ -394,9 +394,11 @@
   <div class="step" id="step4">
     <div class="card">
       <div class="card-title">Step 4 — Get Player Images</div>
-      <p style="margin-bottom:16px;">Find an image of each player and save as <strong>A.png, B.png, C.png, D.png</strong> in <strong>~/quiz-images/</strong></p>
+      <p style="margin-bottom:16px;">Find an image of each player and save as <strong>A.png, B.png, C.png, D.png</strong> in your Remotion project's <strong>public/quiz-images/</strong> folder</p>
       <div class="image-checklist" id="imageChecklist"></div>
-      <p class="hint" style="margin-top:12px;">Then run: <strong>python3 process-quiz-images.py ~/quiz-images/ ./public/episodes/</strong></p>
+      <p style="margin-top:16px;margin-bottom:8px;font-weight:700;">Then copy and run this:</p>
+      <div class="render-cmd" onclick="copyText(this.innerText, 'Process command copied')">cd /Users/paultaylor/Projects/remotion/sports-trivia-promo && python3 process-quiz-images.py ./public/quiz-images/ ./public/episodes/</div>
+      <p class="hint">Save images as A.png, B.png, C.png, D.png in public/quiz-images/ then run the command above.</p>
       <div class="btn-row" style="margin-top:20px;">
         <button class="btn btn-yellow" onclick="goToStep(3)">← BACK</button>
         <button class="btn btn-teal" onclick="goToStep(5)">DONE →</button>
@@ -408,9 +410,9 @@
   <div class="step" id="step5">
     <div class="card">
       <div class="card-title">Step 5 — Render</div>
-      <p style="margin-bottom:16px;">Copy and run this command in your Remotion project:</p>
+      <p style="margin-bottom:16px;">Copy this command, paste into Terminal, and hit Enter. The output folder will open automatically when it's done:</p>
       <div class="render-cmd" id="renderCmd" onclick="copyText(this.innerText, 'Render command copied')"></div>
-      <p class="hint">Click to copy. Run it in Terminal from your Remotion project folder.</p>
+      <p class="hint">Click to copy. Paste into any Terminal window — it handles the folder navigation for you.</p>
       <div class="btn-row" style="margin-top:20px;">
         <button class="btn btn-yellow" onclick="goToStep(4)">← BACK</button>
         <button class="btn btn-teal" onclick="goToStep(6)">VIDEO READY →</button>
@@ -562,7 +564,7 @@ function renderQuestion() {
     letterEl.style.background = cfg.color;
     letterEl.innerText = letter;
     const nameEl = document.createElement('span');
-    nameEl.innerText = q['option' + letter] + ' → save as ' + letter + '.png';
+    nameEl.innerText = q['option' + letter] + ' → save as ' + letter + '.png in public/quiz-images/';
     item.appendChild(letterEl);
     item.appendChild(nameEl);
     checklist.appendChild(item);
@@ -583,7 +585,7 @@ function renderQuestion() {
     factText: q.factText,
     episodeNumber: epNum,
   };
-  const cmd = `npx remotion render QuizRound out/quiz-${cfg.folder}-ep${epNum}.mp4 --props='${JSON.stringify(props)}'`;
+  const cmd = `cd /Users/paultaylor/Projects/remotion/sports-trivia-promo && npx remotion render QuizRound out/quiz-${cfg.folder}-ep${epNum}.mp4 --props='${JSON.stringify(props)}' && open out/`;
   document.getElementById('renderCmd').innerText = cmd;
   
   // Captions

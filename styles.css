@@ -1,11 +1,12 @@
 /* Ballrs Website Styles - Neubrutalist Design */
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800;900&display=swap');
 
 :root {
   --color-cream: #F5F2EB;
   --color-teal: #1ABC9C;
   --color-yellow: #F2C94C;
+  --color-red: #E53935;
   --color-black: #1A1A1A;
   --color-white: #FFFFFF;
   --color-gray: #666666;
@@ -28,6 +29,7 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 80px;
 }
 
 body {
@@ -36,53 +38,84 @@ body {
   color: var(--color-black);
   line-height: 1.6;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
-/* Container */
+/* ========== Container ========== */
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 24px;
 }
 
-/* Header */
+/* ========== Header ========== */
 .header {
-  padding: 8px 0;
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   background-color: var(--color-cream);
   z-index: 100;
   border-bottom: var(--border-width) solid var(--color-black);
+  transition: box-shadow 0.3s;
 }
 
-.header .container {
+.header.scrolled {
+  box-shadow: 0 4px 0 var(--color-black);
+}
+
+.header-inner {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  height: 64px;
 }
 
 .logo {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 28px;
-  font-weight: 900;
-  color: var(--color-black);
   text-decoration: none;
-  letter-spacing: 2px;
+  color: var(--color-black);
 }
 
 .logo-icon {
-  width: 108px;
-  height: 108px;
-  border-radius: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
 }
 
 .logo-text {
-  display: none;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 2px;
 }
 
-/* Hamburger (hidden on desktop) */
+/* Desktop nav */
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.nav a {
+  color: var(--color-black);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 15px;
+  transition: color 0.2s;
+}
+
+.nav a:hover {
+  color: var(--color-teal);
+}
+
+.nav .btn-sm {
+  padding: 10px 20px;
+  font-size: 14px;
+}
+
+/* Hamburger */
 .hamburger {
   display: none;
   background: none;
@@ -91,101 +124,99 @@ body {
   padding: 8px;
   flex-direction: column;
   gap: 5px;
+  z-index: 101;
 }
 
 .hamburger span {
   display: block;
   width: 24px;
-  height: 2px;
+  height: 2.5px;
   background-color: var(--color-black);
   border-radius: 2px;
+  transition: transform 0.3s, opacity 0.3s;
 }
 
-.nav {
-  display: flex;
+/* Mobile nav overlay */
+.nav-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(26, 26, 26, 0.5);
+  z-index: 150;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.nav-overlay.open {
+  display: block;
+  opacity: 1;
+}
+
+/* Mobile nav panel */
+.nav-mobile {
+  display: none;
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 280px;
+  height: 100%;
+  background-color: var(--color-cream);
+  z-index: 200;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 80px 32px 32px;
   gap: 24px;
+  border-left: var(--border-width) solid var(--color-black);
+  transition: right 0.3s ease;
 }
 
-.nav a {
+.nav-mobile.open {
+  right: 0;
+}
+
+.nav-mobile a {
   color: var(--color-black);
   text-decoration: none;
-  font-weight: 600;
-  font-size: 14px;
-  transition: color 0.2s;
+  font-weight: 700;
+  font-size: 20px;
 }
 
-.nav a:hover {
+.nav-mobile a:hover {
   color: var(--color-teal);
 }
 
 .nav-close {
-  display: none;
-}
-
-/* Hero Section */
-.hero {
-  padding: 80px 0;
-  text-align: center;
-}
-
-.hero-title {
-  font-size: 72px;
-  font-weight: 900;
-  letter-spacing: 4px;
-  margin-bottom: 16px;
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 32px;
+  cursor: pointer;
   color: var(--color-black);
+  line-height: 1;
+  padding: 4px;
 }
 
-.hero-tagline {
-  font-size: 24px;
-  font-weight: 500;
-  color: var(--color-gray);
-  margin-bottom: 32px;
-}
-
-/* Sports Row (in hero) */
-.sports-row {
-  display: flex;
-  justify-content: center;
-  gap: 32px;
-  flex-wrap: wrap;
-  margin-bottom: 40px;
-}
-
-.sport-badge {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  min-width: 120px;
-  text-align: center;
-}
-
-.sport-badge img {
-  width: 64px;
-  height: 64px;
-  object-fit: contain;
-}
-
-.sport-badge span {
-  font-size: 14px;
-  font-weight: 700;
-}
-
-/* Buttons */
+/* ========== Buttons ========== */
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px 32px;
+  gap: 10px;
+  padding: 14px 28px;
   font-size: 16px;
   font-weight: 700;
+  font-family: inherit;
   text-decoration: none;
   border: var(--border-width) solid var(--color-black);
   border-radius: 16px;
   cursor: pointer;
-  transition: transform 0.1s, box-shadow 0.1s;
+  transition: transform 0.15s, box-shadow 0.15s;
   box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--color-black);
+  user-select: none;
 }
 
 .btn:hover {
@@ -195,7 +226,7 @@ body {
 
 .btn:active {
   transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0 var(--color-black);
+  box-shadow: 1px 1px 0 var(--color-black);
 }
 
 .btn-primary {
@@ -220,64 +251,231 @@ body {
   flex-wrap: wrap;
 }
 
-/* Store badges */
 .store-icon {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
 }
 
-/* Section Title */
+/* ========== Hero Section ========== */
+.hero {
+  padding: 120px 0 60px;
+  text-align: center;
+}
+
+.hero-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.hero-title {
+  font-size: 80px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  line-height: 0.95;
+  margin-bottom: 20px;
+  color: var(--color-black);
+}
+
+.hero-tagline {
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--color-gray);
+  margin-bottom: 36px;
+}
+
+/* Stat chips */
+.hero-stats {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 36px;
+  flex-wrap: wrap;
+}
+
+.stat-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-white);
+  border: var(--border-width) solid var(--color-black);
+  border-radius: 100px;
+  padding: 8px 20px;
+  box-shadow: 3px 3px 0 var(--color-black);
+}
+
+.stat-number {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--color-teal);
+}
+
+.stat-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-black);
+}
+
+/* Sport chips in hero */
+.sports-row {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 40px;
+}
+
+.sport-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: var(--border-width) solid var(--color-black);
+  border-radius: 100px;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 3px 3px 0 var(--color-black);
+  transition: transform 0.15s, box-shadow 0.15s;
+  cursor: default;
+}
+
+.sport-chip:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--color-black);
+}
+
+.sport-chip img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.sport-nba { background: var(--color-nba); color: var(--color-white); }
+.sport-nfl { background: var(--color-nfl); color: var(--color-white); }
+.sport-mlb { background: var(--color-mlb); color: var(--color-white); }
+.sport-epl { background: var(--color-epl); color: var(--color-white); }
+
+/* ========== Marquee Ticker ========== */
+.ticker {
+  background: var(--color-black);
+  border-top: var(--border-width) solid var(--color-black);
+  border-bottom: var(--border-width) solid var(--color-black);
+  padding: 14px 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.ticker-track {
+  display: inline-flex;
+  align-items: center;
+  gap: 32px;
+  animation: ticker-scroll 20s linear infinite;
+}
+
+.ticker-item {
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  color: var(--color-cream);
+  flex-shrink: 0;
+}
+
+.ticker-dot {
+  color: var(--color-teal);
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+@keyframes ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-33.333%); }
+}
+
+/* ========== Section Title ========== */
 .section-title {
-  font-size: 36px;
+  font-size: 42px;
   font-weight: 900;
   text-align: center;
   margin-bottom: 48px;
   letter-spacing: 1px;
 }
 
-/* Game Modes Section */
+/* ========== Game Modes Section ========== */
 .game-modes {
   padding: 80px 0;
-  background-color: var(--color-white);
-  border-top: var(--border-width) solid var(--color-black);
-  border-bottom: var(--border-width) solid var(--color-black);
 }
 
 .modes-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 32px;
-}
-
-.modes-grid .mode-card {
-  width: calc((100% - 64px) / 3);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
 }
 
 .mode-card {
   background-color: var(--color-white);
   border: var(--border-width) solid var(--color-black);
-  border-radius: 8px;
-  padding: 32px;
+  border-radius: 12px;
+  padding: 28px;
   box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--color-black);
+  transition: transform 0.15s, box-shadow 0.15s;
+  cursor: default;
+  position: relative;
 }
 
-.mode-icon {
-  width: 56px;
-  height: 56px;
-  object-fit: contain;
-  margin-bottom: 16px;
+.mode-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--color-black);
+}
+
+.mode-card:active {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0 var(--color-black);
+}
+
+.mode-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.mode-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: var(--border-width) solid var(--color-black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mode-icon-wrap svg {
+  width: 28px;
+  height: 28px;
 }
 
 .mode-title {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 900;
-  margin-bottom: 12px;
+}
+
+.badge-new {
+  display: inline-block;
+  background: var(--color-red);
+  color: var(--color-white);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  border: var(--border-width) solid var(--color-black);
+  line-height: 1.2;
 }
 
 .mode-description {
   color: var(--color-gray);
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.6;
 }
 
@@ -291,74 +489,92 @@ body {
   margin-right: auto;
 }
 
-/* Social/Competitive Section */
-.social {
+/* ========== Compete Section ========== */
+.compete {
   padding: 80px 0;
-  background-color: var(--color-white);
+  background: var(--color-black);
   border-top: var(--border-width) solid var(--color-black);
   border-bottom: var(--border-width) solid var(--color-black);
 }
 
-.social-grid {
+.compete .section-title {
+  color: var(--color-cream);
+}
+
+.compete-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 32px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
 }
 
-.social-card {
-  background-color: var(--color-white);
-  border: var(--border-width) solid var(--color-black);
-  border-radius: 8px;
-  padding: 32px;
-  box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--color-black);
+.compete-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: var(--border-width) solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 28px 24px;
+  text-align: center;
+  transition: transform 0.15s, border-color 0.2s, background 0.2s;
+  cursor: default;
 }
 
-.social-icon {
+.compete-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--color-teal);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.compete-icon {
   width: 48px;
   height: 48px;
-  object-fit: contain;
-  margin-bottom: 16px;
+  margin: 0 auto 16px;
 }
 
-.social-title {
-  font-size: 22px;
-  font-weight: 900;
-  margin-bottom: 12px;
+.compete-icon svg {
+  width: 48px;
+  height: 48px;
 }
 
-.social-description {
+.compete-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-cream);
+  margin-bottom: 8px;
+}
+
+.compete-desc {
   color: var(--color-gray);
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1.6;
 }
 
-/* CTA Section */
+/* ========== CTA Section ========== */
 .cta {
-  padding: 80px 0;
+  padding: 100px 0;
   text-align: center;
 }
 
 .cta-headline {
-  font-size: 32px;
+  font-size: 40px;
   font-weight: 900;
-  max-width: 600px;
-  margin: 0 auto 40px;
+  max-width: 700px;
+  margin: 0 auto 44px;
   letter-spacing: 0.5px;
-  line-height: 1.3;
+  line-height: 1.25;
 }
 
 .cta-free {
-  margin-top: 24px;
+  margin-top: 20px;
   font-size: 16px;
   font-weight: 600;
   color: var(--color-gray);
 }
 
-/* Footer */
+/* ========== Footer ========== */
 .footer {
   padding: 48px 0;
   background-color: var(--color-black);
   color: var(--color-white);
+  border-top: var(--border-width) solid var(--color-black);
 }
 
 .footer-content {
@@ -422,7 +638,28 @@ body {
   font-size: 14px;
 }
 
-/* Page Content (for legal pages) */
+/* ========== Scroll Reveal Animation ========== */
+.fade-up {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.fade-up.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger game mode cards */
+.modes-grid .mode-card:nth-child(1) { transition-delay: 0s; }
+.modes-grid .mode-card:nth-child(2) { transition-delay: 0.08s; }
+.modes-grid .mode-card:nth-child(3) { transition-delay: 0.16s; }
+.modes-grid .mode-card:nth-child(4) { transition-delay: 0.24s; }
+.modes-grid .mode-card:nth-child(5) { transition-delay: 0.32s; }
+.modes-grid .mode-card:nth-child(6) { transition-delay: 0.40s; }
+.modes-grid .mode-card:nth-child(7) { transition-delay: 0.48s; }
+
+/* ========== Page Content (legal pages) ========== */
 .page-content {
   padding: 60px 0;
   max-width: 800px;
@@ -517,78 +754,50 @@ body {
   text-decoration: underline;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  /* Header: logo top-left, hamburger top-right */
-  .header {
-    border-bottom: none;
-    padding: 0;
+/* ========== Responsive ========== */
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .modes-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 
-  .header .container {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 24px;
-    padding-bottom: 12px;
+  .compete-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .hero-title {
+    font-size: 60px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  html {
+    scroll-padding-top: 64px;
+  }
+
+  /* Header */
+  .nav {
+    display: none;
   }
 
   .hamburger {
     display: flex;
   }
 
-  .logo-icon {
-    width: 96px;
-    height: 96px;
-    border-radius: 18px;
-  }
-
-  /* Mobile nav overlay */
-  .nav {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: var(--color-cream);
-    z-index: 200;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 32px;
-  }
-
-  .nav.nav-open {
+  .nav-mobile {
     display: flex;
   }
 
-  .nav a {
-    font-size: 24px;
-    font-weight: 900;
-  }
-
-  .nav-close {
-    display: block;
-    position: absolute;
-    top: 24px;
-    right: 24px;
-    background: none;
-    border: none;
-    font-size: 36px;
-    cursor: pointer;
-    color: var(--color-black);
-    line-height: 1;
-  }
-
-  /* Hero: remove BALLRS text, keep tagline */
+  /* Hero */
   .hero {
-    padding: 16px 0 48px;
+    padding: 96px 0 40px;
   }
 
   .hero-title {
-    font-size: 48px;
+    font-size: 44px;
+    letter-spacing: 2px;
   }
 
   .hero-tagline {
@@ -596,35 +805,118 @@ body {
     margin-bottom: 28px;
   }
 
-  /* Sports: single row, smaller */
+  .hero-stats {
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+
+  .stat-chip {
+    padding: 6px 14px;
+  }
+
+  .stat-number {
+    font-size: 20px;
+  }
+
+  .stat-label {
+    font-size: 12px;
+  }
+
   .sports-row {
-    gap: 20px;
+    gap: 8px;
     margin-bottom: 32px;
-    flex-wrap: nowrap;
   }
 
-  .sport-badge {
-    min-width: auto;
+  .sport-chip {
+    padding: 6px 12px;
+    font-size: 12px;
+    gap: 6px;
   }
 
-  .sport-badge img {
-    width: 48px;
-    height: 48px;
+  .sport-chip img {
+    width: 20px;
+    height: 20px;
   }
 
-  .sport-badge span {
-    font-size: 11px;
+  /* Ticker */
+  .ticker-item {
+    font-size: 14px;
+    letter-spacing: 2px;
   }
 
-  .modes-grid .mode-card {
-    width: 100%;
+  /* Game modes */
+  .game-modes {
+    padding: 60px 0;
   }
 
-  .social-grid {
+  .section-title {
+    font-size: 32px;
+    margin-bottom: 32px;
+  }
+
+  .modes-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
 
-  /* Footer: center everything */
+  .mode-card {
+    padding: 20px;
+  }
+
+  /* Compete */
+  .compete {
+    padding: 60px 0;
+  }
+
+  .compete-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .compete-card {
+    padding: 20px 16px;
+  }
+
+  .compete-icon {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 12px;
+  }
+
+  .compete-icon svg {
+    width: 40px;
+    height: 40px;
+  }
+
+  .compete-title {
+    font-size: 16px;
+  }
+
+  .compete-desc {
+    font-size: 13px;
+  }
+
+  /* CTA */
+  .cta {
+    padding: 60px 0;
+  }
+
+  .cta-headline {
+    font-size: 28px;
+  }
+
+  .btn-group {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .btn {
+    width: 100%;
+    max-width: 300px;
+    justify-content: center;
+  }
+
+  /* Footer */
   .footer-content {
     flex-direction: column;
     align-items: center;
@@ -639,41 +931,56 @@ body {
     text-align: center;
   }
 
-  .btn-group {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .btn {
-    width: 100%;
-    max-width: 300px;
-    justify-content: center;
-  }
-
-  .cta-headline {
-    font-size: 24px;
-  }
-
-  .section-title {
-    font-size: 28px;
-  }
-
   .page-title {
     font-size: 32px;
   }
 }
 
+/* Small phones */
 @media (max-width: 380px) {
+  .hero-title {
+    font-size: 36px;
+  }
+
   .sports-row {
-    gap: 12px;
+    gap: 6px;
   }
 
-  .sport-badge img {
-    width: 40px;
-    height: 40px;
+  .sport-chip {
+    padding: 5px 10px;
+    font-size: 11px;
   }
 
-  .sport-badge span {
-    font-size: 10px;
+  .sport-chip img {
+    width: 18px;
+    height: 18px;
+  }
+
+  .stat-chip {
+    padding: 5px 12px;
+  }
+
+  .compete-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .fade-up {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .ticker-track {
+    animation-play-state: paused;
+  }
+
+  .btn,
+  .mode-card,
+  .sport-chip,
+  .compete-card {
+    transition: none;
   }
 }

@@ -365,10 +365,16 @@ body {
 }
 
 .ticker-track {
-  display: inline-flex;
+  display: flex;
+  width: max-content;
+  animation: ticker-scroll 20s linear infinite;
+}
+
+.ticker-segment {
+  display: flex;
   align-items: center;
   gap: 32px;
-  animation: ticker-scroll 20s linear infinite;
+  padding-right: 32px;
 }
 
 .ticker-item {
@@ -387,7 +393,7 @@ body {
 
 @keyframes ticker-scroll {
   0% { transform: translateX(0); }
-  100% { transform: translateX(-33.333%); }
+  100% { transform: translateX(-50%); }
 }
 
 /* ========== Section Title ========== */

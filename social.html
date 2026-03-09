@@ -424,11 +424,18 @@
   <div class="step" id="step6">
     <div class="card">
       <div class="card-title">Step 6 — Post It</div>
-      <p style="margin-bottom:16px;">Click any caption to copy it:</p>
-      <div id="captions"></div>
-      <div class="caption-block" id="pinnedComment" onclick="copyText(this.querySelector('pre').innerText, 'Pinned comment copied')">
-        <div class="platform">📌 Pinned Comment</div>
-        <pre id="pinnedText"></pre>
+      <div id="captionLoading" style="text-align:center;padding:40px 0;">
+        <p style="font-weight:700;font-size:18px;">Generating captions...</p>
+        <p style="color:#6B7280;margin-top:8px;">Claude is writing your social copy</p>
+      </div>
+      <div id="captionResults" style="display:none;">
+        <p style="margin-bottom:16px;">Click any caption to copy it:</p>
+        <div id="captions"></div>
+        <div class="caption-block" id="pinnedComment" onclick="copyText(this.querySelector('pre').innerText, 'Pinned comment copied')">
+          <div class="platform">📌 Pinned Comment</div>
+          <pre id="pinnedText"></pre>
+        </div>
+        <button class="btn btn-yellow" style="margin-bottom:12px;" onclick="generateCaptions()">REGENERATE CAPTIONS</button>
       </div>
       <div class="btn-row" style="margin-top:20px;">
         <button class="btn btn-teal" onclick="reset()">MAKE ANOTHER VIDEO</button>
@@ -504,6 +511,10 @@ function goToStep(n) {
   currentStep = n;
   updateStepIndicator();
   window.scrollTo(0, 0);
+  
+  if (n === 6) {
+    generateCaptions();
+  }
 }
 
 function pickSport(sport) {
@@ -588,27 +599,100 @@ function renderQuestion() {
   const cmd = `cd /Users/paultaylor/Projects/remotion/sports-trivia-promo && npx remotion render QuizRound out/quiz-${cfg.folder}-ep${epNum}.mp4 --props='${JSON.stringify(props)}' && open out/`;
   document.getElementById('renderCmd').innerText = cmd;
   
-  // Captions
+  document.getElementById('pinnedText').innerText = '';
+}
+
+async function generateCaptions() {
+  const q = currentQuestion;
+  const cfg = SPORT_CONFIG[q.sport];
   const correctName = q['option' + q.correctAnswer];
-  const captionsEl = document.getElementById('captions');
-  captionsEl.innerHTML = '';
   
-  const platforms = [
-    { name: 'TikTok', text: `${q.question} 👀\n\nDrop your answer ⬇️\n\n${cfg.hashtags} #sportstrivia #ballrs #fyp` },
-    { name: 'X / Twitter', text: `${q.question}\n\n👀\n\n${cfg.hashtags.split(' ')[0]}` },
-    { name: 'Instagram Reels', text: `${q.question} 👀\n\nAnswer in the video.\n\nDaily trivia at Ballrs — link in bio.` },
-    { name: 'YouTube Shorts (title)', text: q.question },
-  ];
+  document.getElementById('captionLoading').style.display = 'block';
+  document.getElementById('captionResults').style.display = 'none';
   
-  platforms.forEach(p => {
-    const block = document.createElement('div');
-    block.className = 'caption-block';
-    block.onclick = () => copyText(p.text, p.name + ' caption copied');
-    block.innerHTML = `<div class="platform">${p.name}</div><pre>${p.text}</pre>`;
-    captionsEl.appendChild(block);
-  });
+  const prompt = `You are a social media copywriter for Ballrs, a daily sports trivia app. Write captions for a quiz video being posted across platforms.
+
+The video shows this question: "${q.question}"
+The options are: A) ${q.optionA}, B) ${q.optionB}, C) ${q.optionC}, D) ${q.optionD}
+The correct answer is: ${correctName}
+The fact revealed: ${q.factText}
+The sport is: ${q.sport}
+
+Write captions for each platform. The tone should be casual, confident, and designed to get people to comment their guess. Never reveal the answer in the caption — the video does that. Use the stat or question to hook people in.
+
+Rules:
+- TikTok: Short, punchy, casual. 3-6 relevant hashtags. Make people want to comment.
+- X/Twitter: Very short. 1-2 lines max. 1-2 hashtags only. No fluff.
+- Instagram Reels: Slightly longer, include "link in bio" mention for Ballrs app. 
+- YouTube Shorts: Just a compelling title, nothing else.
+- Pinned Comment: The answer + the fact, casual tone, like you're telling a friend.
+
+Respond ONLY in this exact JSON format with no other text:
+{"tiktok":"...","twitter":"...","instagram":"...","youtube":"...","pinned":"..."}`;
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+    
+    const data = await response.json();
+    const text = data.content.map(i => i.text || "").join("");
+    const clean = text.replace(/```json|```/g, "").trim();
+    const captions = JSON.parse(clean);
+    
+    const captionsEl = document.getElementById('captions');
+    captionsEl.innerHTML = '';
+    
+    const platforms = [
+      { name: 'TikTok', text: captions.tiktok },
+      { name: 'X / Twitter', text: captions.twitter },
+      { name: 'Instagram Reels', text: captions.instagram },
+      { name: 'YouTube Shorts (title)', text: captions.youtube },
+    ];
+    
+    platforms.forEach(p => {
+      const block = document.createElement('div');
+      block.className = 'caption-block';
+      block.onclick = () => copyText(p.text, p.name + ' caption copied');
+      block.innerHTML = `<div class="platform">${p.name}</div><pre>${p.text}</pre>`;
+      captionsEl.appendChild(block);
+    });
+    
+    document.getElementById('pinnedText').innerText = captions.pinned;
+    
+  } catch (err) {
+    console.error('Caption generation failed:', err);
+    
+    // Fallback to static captions
+    const captionsEl = document.getElementById('captions');
+    captionsEl.innerHTML = '';
+    
+    const platforms = [
+      { name: 'TikTok', text: `${q.question} 👀\n\nDrop your answer ⬇️\n\n${cfg.hashtags} #sportstrivia #ballrs #fyp` },
+      { name: 'X / Twitter', text: `${q.question}\n\n👀\n\n${cfg.hashtags.split(' ')[0]}` },
+      { name: 'Instagram Reels', text: `${q.question} 👀\n\nAnswer in the video.\n\nDaily trivia at Ballrs — link in bio.` },
+      { name: 'YouTube Shorts (title)', text: q.question },
+    ];
+    
+    platforms.forEach(p => {
+      const block = document.createElement('div');
+      block.className = 'caption-block';
+      block.onclick = () => copyText(p.text, p.name + ' caption copied');
+      block.innerHTML = `<div class="platform">${p.name}</div><pre>${p.text}</pre>`;
+      captionsEl.appendChild(block);
+    });
+    
+    document.getElementById('pinnedText').innerText = `${correctName} 🔥 ${q.factText}`;
+  }
   
-  document.getElementById('pinnedText').innerText = `${correctName} 🔥 ${q.factText}`;
+  document.getElementById('captionLoading').style.display = 'none';
+  document.getElementById('captionResults').style.display = 'block';
 }
 
 function copyText(text, message) {

@@ -657,6 +657,113 @@ body {
   font-size: 14px;
 }
 
+/* ========== Contact Modal ========== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(26, 26, 26, 0.6);
+  z-index: 300;
+}
+
+.modal-overlay.open {
+  display: block;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.95);
+  background: var(--color-white);
+  border: var(--border-width) solid var(--color-black);
+  border-radius: 16px;
+  box-shadow: 8px 8px 0 var(--color-black);
+  padding: 36px;
+  width: 90%;
+  max-width: 440px;
+  z-index: 301;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.modal.open {
+  display: block;
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: var(--color-black);
+  line-height: 1;
+  padding: 4px;
+}
+
+.modal-title {
+  font-size: 24px;
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+
+.modal-subtitle {
+  font-size: 15px;
+  color: var(--color-gray);
+  margin-bottom: 24px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--color-black);
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 15px;
+  font-family: inherit;
+  border: var(--border-width) solid var(--color-black);
+  border-radius: 10px;
+  background: var(--color-cream);
+  color: var(--color-black);
+  outline: none;
+  transition: box-shadow 0.15s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  box-shadow: 3px 3px 0 var(--color-black);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.btn-full {
+  width: 100%;
+  justify-content: center;
+  margin-top: 8px;
+}
+
 /* ========== Scroll Reveal Animation ========== */
 .fade-up {
   opacity: 0;

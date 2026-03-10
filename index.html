@@ -41,7 +41,7 @@
             <nav class="nav" id="nav">
                 <a href="#games">Games</a>
                 <a href="#compete">Compete</a>
-                <a href="mailto:hello@ballrs.net">Contact</a>
+                <a href="#" onclick="event.preventDefault();openContact()">Contact</a>
                 <a href="#download" class="btn btn-primary btn-sm">Download</a>
             </nav>
             <button class="hamburger" id="hamburger" onclick="toggleNav()" aria-label="Menu">
@@ -58,7 +58,7 @@
         <button class="nav-close" onclick="closeNav()" aria-label="Close menu">&times;</button>
         <a href="#games" onclick="closeNav()">Games</a>
         <a href="#compete" onclick="closeNav()">Compete</a>
-        <a href="mailto:hello@ballrs.net" onclick="closeNav()">Contact</a>
+        <a href="#" onclick="event.preventDefault();closeNav();openContact()">Contact</a>
         <a href="#download" class="btn btn-primary" onclick="closeNav()">Download</a>
     </nav>
 
@@ -241,6 +241,29 @@
         </div>
     </section>
 
+    <!-- Contact Modal -->
+    <div class="modal-overlay" id="contactOverlay" onclick="closeContact()"></div>
+    <div class="modal" id="contactModal" role="dialog" aria-label="Contact us">
+        <button class="modal-close" onclick="closeContact()" aria-label="Close">&times;</button>
+        <h3 class="modal-title">Get in touch</h3>
+        <p class="modal-subtitle">We'd love to hear from you.</p>
+        <form id="contactForm" onsubmit="submitContact(event)">
+            <div class="form-group">
+                <label for="contactName">Name</label>
+                <input type="text" id="contactName" placeholder="Your name" required />
+            </div>
+            <div class="form-group">
+                <label for="contactEmail">Email</label>
+                <input type="email" id="contactEmail" placeholder="you@example.com" required />
+            </div>
+            <div class="form-group">
+                <label for="contactMessage">Message</label>
+                <textarea id="contactMessage" rows="4" placeholder="What's on your mind?" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">Send Message</button>
+        </form>
+    </div>
+
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
@@ -308,6 +331,33 @@
                 header.classList.remove('scrolled');
             }
         }, { passive: true });
+
+        // Contact modal
+        function openContact() {
+            document.getElementById('contactOverlay').classList.add('open');
+            document.getElementById('contactModal').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeContact() {
+            document.getElementById('contactOverlay').classList.remove('open');
+            document.getElementById('contactModal').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+        function submitContact(e) {
+            e.preventDefault();
+            var name = document.getElementById('contactName').value;
+            var email = document.getElementById('contactEmail').value;
+            var message = document.getElementById('contactMessage').value;
+            var subject = encodeURIComponent('Ballrs Contact: ' + name);
+            var body = encodeURIComponent('From: ' + name + ' (' + email + ')\n\n' + message);
+            window.location.href = 'mailto:hello@ballrs.net?subject=' + subject + '&body=' + body;
+            closeContact();
+            document.getElementById('contactForm').reset();
+        }
+        // Close modal on Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeContact();
+        });
 
         // Reduced motion
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {

@@ -764,6 +764,40 @@ body {
   margin-top: 8px;
 }
 
+.contact-success {
+  display: none;
+  text-align: center;
+  padding: 20px 0 0;
+}
+
+.success-check {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-teal);
+  color: var(--color-white);
+  font-size: 28px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  border: var(--border-width) solid var(--color-black);
+  box-shadow: 3px 3px 0 var(--color-black);
+}
+
+.success-title {
+  font-size: 22px;
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+
+.success-subtitle {
+  font-size: 15px;
+  color: var(--color-gray);
+  margin-bottom: 24px;
+}
+
 /* ========== Scroll Reveal Animation ========== */
 .fade-up {
   opacity: 0;

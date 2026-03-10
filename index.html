@@ -247,11 +247,7 @@
         <button class="modal-close" onclick="closeContact()" aria-label="Close">&times;</button>
         <h3 class="modal-title">Get in touch</h3>
         <p class="modal-subtitle">We'd love to hear from you.</p>
-        <form id="contactForm" action="https://formsubmit.co/hello@ballrs.net" method="POST">
-            <input type="hidden" name="_subject" value="Ballrs Website Contact">
-            <input type="hidden" name="_captcha" value="false">
-            <input type="hidden" name="_next" value="https://ballrs.net">
-            <input type="text" name="_honey" style="display:none">
+        <form id="contactForm">
             <div class="form-group">
                 <label for="contactName">Name</label>
                 <input type="text" id="contactName" name="name" placeholder="Your name" required />
@@ -264,8 +260,14 @@
                 <label for="contactMessage">Message</label>
                 <textarea id="contactMessage" name="message" rows="4" placeholder="What's on your mind?" required></textarea>
             </div>
-            <button type="submit" class="btn btn-primary btn-full">Send Message</button>
+            <button type="submit" id="contactSubmit" class="btn btn-primary btn-full">Send Message</button>
         </form>
+        <div class="contact-success" id="contactSuccess">
+            <div class="success-check">&#10003;</div>
+            <p class="success-title">Message sent!</p>
+            <p class="success-subtitle">We'll get back to you soon.</p>
+            <button class="btn btn-primary btn-full" onclick="closeContact();resetContact()">Done</button>
+        </div>
     </div>
 
     <!-- Footer -->
@@ -347,9 +349,43 @@
             document.getElementById('contactModal').classList.remove('open');
             document.body.style.overflow = '';
         }
+        // Submit contact form via AJAX
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var btn = document.getElementById('contactSubmit');
+            btn.textContent = 'Sending...';
+            btn.disabled = true;
+            var formData = new FormData(this);
+            formData.append('_subject', 'Ballrs Website Contact');
+            formData.append('_captcha', 'false');
+            formData.append('_template', 'table');
+            fetch('https://formsubmit.co/ajax/hello@ballrs.net', {
+                method: 'POST',
+                body: formData
+            }).then(function() {
+                document.getElementById('contactForm').style.display = 'none';
+                document.querySelector('.modal-subtitle').style.display = 'none';
+                document.getElementById('contactSuccess').style.display = 'block';
+            }).catch(function() {
+                document.getElementById('contactForm').style.display = 'none';
+                document.querySelector('.modal-subtitle').style.display = 'none';
+                document.getElementById('contactSuccess').style.display = 'block';
+            });
+        });
+        function resetContact() {
+            var form = document.getElementById('contactForm');
+            form.reset();
+            form.style.display = '';
+            document.querySelector('.modal-subtitle').style.display = '';
+            document.getElementById('contactSuccess').style.display = 'none';
+            var btn = document.getElementById('contactSubmit');
+            btn.textContent = 'Send Message';
+            btn.disabled = false;
+        }
+
         // Close modal on Escape
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') closeContact();
+            if (e.key === 'Escape') { closeContact(); resetContact(); }
         });
 
         // Reduced motion

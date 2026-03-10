@@ -378,14 +378,40 @@ body {
   height: auto;
 }
 
+/* Store badges */
+.store-badges {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.store-badge {
+  display: inline-block;
+  transition: transform 0.15s, opacity 0.15s;
+}
+
+.store-badge:hover {
+  transform: scale(1.05);
+}
+
+.store-badge:active {
+  transform: scale(0.97);
+}
+
+.store-badge img {
+  height: 48px;
+  width: auto;
+  display: block;
+}
+
 /* Download pulse animation */
-.btn-group.pulse .btn {
+.store-badges.pulse .store-badge {
   animation: btn-pulse 0.5s ease 3;
 }
 
 @keyframes btn-pulse {
-  0%, 100% { transform: scale(1); box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--color-black); }
-  50% { transform: scale(1.06); box-shadow: 6px 6px 0 var(--color-black); }
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
 }
 
 /* Scroll hint */
@@ -601,6 +627,10 @@ body {
   margin: 0 auto 44px;
   letter-spacing: 0.5px;
   line-height: 1.25;
+}
+
+.cta .store-badges {
+  justify-content: center;
 }
 
 .cta-free {

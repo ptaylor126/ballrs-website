@@ -263,6 +263,7 @@ body {
 .hero-text {
   flex: 1;
   min-width: 0;
+  padding-left: 24px;
 }
 
 .hero-title {
@@ -359,6 +360,7 @@ body {
 .hero-phone {
   flex-shrink: 0;
   width: 380px;
+  padding-right: 24px;
 }
 
 .phone-frame {
@@ -959,12 +961,14 @@ body {
 
   .hero-text {
     order: 1;
+    padding-left: 0;
   }
 
   .hero-phone {
     order: 2;
     width: 280px;
     margin: 0 auto;
+    padding-right: 0;
   }
 
   .hero-stats {

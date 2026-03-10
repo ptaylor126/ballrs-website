@@ -258,17 +258,22 @@ body {
 
 /* ========== Hero Section ========== */
 .hero {
-  padding: 120px 0 60px;
-  text-align: center;
+  padding: 104px 0 60px;
 }
 
-.hero-content {
-  max-width: 800px;
-  margin: 0 auto;
+.hero-split {
+  display: flex;
+  align-items: center;
+  gap: 60px;
+}
+
+.hero-text {
+  flex: 1;
+  min-width: 0;
 }
 
 .hero-title {
-  font-size: 80px;
+  font-size: 72px;
   font-weight: 900;
   letter-spacing: 3px;
   line-height: 0.95;
@@ -280,15 +285,14 @@ body {
   font-size: 22px;
   font-weight: 500;
   color: var(--color-gray);
-  margin-bottom: 36px;
+  margin-bottom: 32px;
 }
 
 /* Stat chips */
 .hero-stats {
   display: flex;
-  justify-content: center;
-  gap: 16px;
-  margin-bottom: 36px;
+  gap: 12px;
+  margin-bottom: 28px;
   flex-wrap: wrap;
 }
 
@@ -318,10 +322,9 @@ body {
 /* Sport chips in hero */
 .sports-row {
   display: flex;
-  justify-content: center;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
-  margin-bottom: 40px;
+  margin-bottom: 32px;
 }
 
 .sport-chip {
@@ -353,6 +356,38 @@ body {
 .sport-nfl { background: var(--color-nfl); color: var(--color-white); }
 .sport-mlb { background: var(--color-mlb); color: var(--color-white); }
 .sport-epl { background: var(--color-epl); color: var(--color-white); }
+
+/* Hero buttons - left aligned */
+.hero-buttons {
+  justify-content: flex-start;
+}
+
+/* Phone mockup */
+.hero-phone {
+  flex-shrink: 0;
+  width: 320px;
+}
+
+.phone-frame {
+  border: 3px solid var(--color-black);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 8px 8px 0 var(--color-black);
+  transform: rotate(2deg);
+  transition: transform 0.3s, box-shadow 0.3s;
+  background: var(--color-white);
+}
+
+.phone-frame:hover {
+  transform: rotate(0deg) translate(-2px, -2px);
+  box-shadow: 10px 10px 0 var(--color-black);
+}
+
+.phone-screenshot {
+  display: block;
+  width: 100%;
+  height: auto;
+}
 
 /* ========== Marquee Ticker ========== */
 .ticker {
@@ -755,16 +790,24 @@ body {
 
 /* Tablet */
 @media (max-width: 1024px) {
+  .hero-split {
+    gap: 40px;
+  }
+
+  .hero-phone {
+    width: 260px;
+  }
+
+  .hero-title {
+    font-size: 56px;
+  }
+
   .modes-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 
   .compete-grid {
     grid-template-columns: repeat(2, 1fr);
-  }
-
-  .hero-title {
-    font-size: 60px;
   }
 }
 
@@ -789,7 +832,38 @@ body {
 
   /* Hero */
   .hero {
-    padding: 96px 0 40px;
+    padding: 88px 0 40px;
+  }
+
+  .hero-split {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .hero-text {
+    order: 1;
+  }
+
+  .hero-phone {
+    order: 2;
+    width: 260px;
+    margin: 0 auto;
+  }
+
+  .phone-frame {
+    transform: rotate(0deg);
+  }
+
+  .hero-stats {
+    justify-content: center;
+  }
+
+  .sports-row {
+    justify-content: center;
+  }
+
+  .hero-buttons {
+    justify-content: center;
   }
 
   .hero-title {
@@ -799,12 +873,12 @@ body {
 
   .hero-tagline {
     font-size: 18px;
-    margin-bottom: 28px;
+    margin-bottom: 24px;
   }
 
   .hero-stats {
     gap: 10px;
-    margin-bottom: 28px;
+    margin-bottom: 24px;
   }
 
   .stat-chip {
@@ -821,7 +895,7 @@ body {
 
   .sports-row {
     gap: 8px;
-    margin-bottom: 32px;
+    margin-bottom: 28px;
   }
 
   .sport-chip {

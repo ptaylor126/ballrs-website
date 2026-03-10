@@ -509,9 +509,10 @@ body {
 }
 
 /* Initial hidden state — all stacked */
-.gameplay-card-1 { transition-delay: 0.1s; z-index: 1; }
-.gameplay-card-2 { transition-delay: 0.3s; z-index: 3; }
-.gameplay-card-3 { transition-delay: 0.5s; z-index: 2; }
+.gameplay-card-1 { transition-delay: 0.1s; z-index: 2; }
+.gameplay-card-2 { transition-delay: 0.25s; z-index: 3; }
+.gameplay-card-3 { transition-delay: 0.4s; z-index: 3; }
+.gameplay-card-4 { transition-delay: 0.55s; z-index: 2; }
 
 /* Fan out when visible */
 .gameplay-cards.fan-in .gameplay-card {
@@ -519,15 +520,19 @@ body {
 }
 
 .gameplay-cards.fan-in .gameplay-card-1 {
-  transform: rotate(-6deg) translateX(-260px) translateY(10px);
+  transform: rotate(-8deg) translateX(-340px) translateY(20px);
 }
 
 .gameplay-cards.fan-in .gameplay-card-2 {
-  transform: rotate(0deg) translateY(-10px) scale(1.02);
+  transform: rotate(-3deg) translateX(-120px) translateY(-5px);
 }
 
 .gameplay-cards.fan-in .gameplay-card-3 {
-  transform: rotate(6deg) translateX(260px) translateY(10px);
+  transform: rotate(3deg) translateX(120px) translateY(-5px);
+}
+
+.gameplay-cards.fan-in .gameplay-card-4 {
+  transform: rotate(8deg) translateX(340px) translateY(20px);
 }
 
 /* Hover — lift and straighten */
@@ -536,15 +541,19 @@ body {
 }
 
 .gameplay-cards.fan-in .gameplay-card-1:hover {
-  transform: rotate(-2deg) translateX(-260px) translateY(-8px) scale(1.05);
+  transform: rotate(-4deg) translateX(-340px) translateY(-8px) scale(1.05);
 }
 
 .gameplay-cards.fan-in .gameplay-card-2:hover {
-  transform: rotate(0deg) translateY(-20px) scale(1.07);
+  transform: rotate(-1deg) translateX(-120px) translateY(-15px) scale(1.07);
 }
 
 .gameplay-cards.fan-in .gameplay-card-3:hover {
-  transform: rotate(2deg) translateX(260px) translateY(-8px) scale(1.05);
+  transform: rotate(1deg) translateX(120px) translateY(-15px) scale(1.07);
+}
+
+.gameplay-cards.fan-in .gameplay-card-4:hover {
+  transform: rotate(4deg) translateX(340px) translateY(-8px) scale(1.05);
 }
 
 /* ========== Section Title ========== */
@@ -1041,11 +1050,15 @@ body {
 /* Tablet */
 @media (max-width: 1024px) {
   .gameplay-cards { height: 440px; }
-  .gameplay-card { width: 200px; }
-  .gameplay-cards.fan-in .gameplay-card-1 { transform: rotate(-6deg) translateX(-200px) translateY(10px); }
-  .gameplay-cards.fan-in .gameplay-card-3 { transform: rotate(6deg) translateX(200px) translateY(10px); }
-  .gameplay-cards.fan-in .gameplay-card-1:hover { transform: rotate(-2deg) translateX(-200px) translateY(-8px) scale(1.05); }
-  .gameplay-cards.fan-in .gameplay-card-3:hover { transform: rotate(2deg) translateX(200px) translateY(-8px) scale(1.05); }
+  .gameplay-card { width: 180px; }
+  .gameplay-cards.fan-in .gameplay-card-1 { transform: rotate(-8deg) translateX(-260px) translateY(18px); }
+  .gameplay-cards.fan-in .gameplay-card-2 { transform: rotate(-3deg) translateX(-90px) translateY(-5px); }
+  .gameplay-cards.fan-in .gameplay-card-3 { transform: rotate(3deg) translateX(90px) translateY(-5px); }
+  .gameplay-cards.fan-in .gameplay-card-4 { transform: rotate(8deg) translateX(260px) translateY(18px); }
+  .gameplay-cards.fan-in .gameplay-card-1:hover { transform: rotate(-4deg) translateX(-260px) translateY(-8px) scale(1.05); }
+  .gameplay-cards.fan-in .gameplay-card-2:hover { transform: rotate(-1deg) translateX(-90px) translateY(-12px) scale(1.07); }
+  .gameplay-cards.fan-in .gameplay-card-3:hover { transform: rotate(1deg) translateX(90px) translateY(-12px) scale(1.07); }
+  .gameplay-cards.fan-in .gameplay-card-4:hover { transform: rotate(4deg) translateX(260px) translateY(-8px) scale(1.05); }
 
   .hero-split {
     gap: 40px;
@@ -1165,12 +1178,16 @@ body {
   }
 
   .gameplay { padding: 48px 0; }
-  .gameplay-cards { height: 360px; }
-  .gameplay-card { width: 150px; }
-  .gameplay-cards.fan-in .gameplay-card-1 { transform: rotate(-6deg) translateX(-120px) translateY(8px); }
-  .gameplay-cards.fan-in .gameplay-card-3 { transform: rotate(6deg) translateX(120px) translateY(8px); }
-  .gameplay-cards.fan-in .gameplay-card-1:hover { transform: rotate(-2deg) translateX(-120px) translateY(-8px) scale(1.05); }
-  .gameplay-cards.fan-in .gameplay-card-3:hover { transform: rotate(2deg) translateX(120px) translateY(-8px) scale(1.05); }
+  .gameplay-cards { height: 340px; }
+  .gameplay-card { width: 130px; }
+  .gameplay-cards.fan-in .gameplay-card-1 { transform: rotate(-8deg) translateX(-170px) translateY(14px); }
+  .gameplay-cards.fan-in .gameplay-card-2 { transform: rotate(-3deg) translateX(-60px) translateY(-4px); }
+  .gameplay-cards.fan-in .gameplay-card-3 { transform: rotate(3deg) translateX(60px) translateY(-4px); }
+  .gameplay-cards.fan-in .gameplay-card-4 { transform: rotate(8deg) translateX(170px) translateY(14px); }
+  .gameplay-cards.fan-in .gameplay-card-1:hover { transform: rotate(-4deg) translateX(-170px) translateY(-6px) scale(1.05); }
+  .gameplay-cards.fan-in .gameplay-card-2:hover { transform: rotate(-1deg) translateX(-60px) translateY(-10px) scale(1.07); }
+  .gameplay-cards.fan-in .gameplay-card-3:hover { transform: rotate(1deg) translateX(60px) translateY(-10px) scale(1.07); }
+  .gameplay-cards.fan-in .gameplay-card-4:hover { transform: rotate(4deg) translateX(170px) translateY(-6px) scale(1.05); }
 
   .scroll-hint {
     display: none;
@@ -1291,12 +1308,16 @@ body {
     grid-template-columns: 1fr;
   }
 
-  .gameplay-cards { height: 300px; }
-  .gameplay-card { width: 120px; }
-  .gameplay-cards.fan-in .gameplay-card-1 { transform: rotate(-6deg) translateX(-90px) translateY(8px); }
-  .gameplay-cards.fan-in .gameplay-card-3 { transform: rotate(6deg) translateX(90px) translateY(8px); }
-  .gameplay-cards.fan-in .gameplay-card-1:hover { transform: rotate(-2deg) translateX(-90px) translateY(-8px) scale(1.05); }
-  .gameplay-cards.fan-in .gameplay-card-3:hover { transform: rotate(2deg) translateX(90px) translateY(-8px) scale(1.05); }
+  .gameplay-cards { height: 280px; }
+  .gameplay-card { width: 100px; }
+  .gameplay-cards.fan-in .gameplay-card-1 { transform: rotate(-8deg) translateX(-130px) translateY(12px); }
+  .gameplay-cards.fan-in .gameplay-card-2 { transform: rotate(-3deg) translateX(-45px) translateY(-3px); }
+  .gameplay-cards.fan-in .gameplay-card-3 { transform: rotate(3deg) translateX(45px) translateY(-3px); }
+  .gameplay-cards.fan-in .gameplay-card-4 { transform: rotate(8deg) translateX(130px) translateY(12px); }
+  .gameplay-cards.fan-in .gameplay-card-1:hover { transform: rotate(-4deg) translateX(-130px) translateY(-6px) scale(1.05); }
+  .gameplay-cards.fan-in .gameplay-card-2:hover { transform: rotate(-1deg) translateX(-45px) translateY(-8px) scale(1.07); }
+  .gameplay-cards.fan-in .gameplay-card-3:hover { transform: rotate(1deg) translateX(45px) translateY(-8px) scale(1.07); }
+  .gameplay-cards.fan-in .gameplay-card-4:hover { transform: rotate(4deg) translateX(130px) translateY(-6px) scale(1.05); }
 }
 
 /* Reduced motion */

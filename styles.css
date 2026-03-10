@@ -251,7 +251,7 @@ body {
 
 /* ========== Hero Section ========== */
 .hero {
-  padding: 160px 0 60px;
+  padding: 160px 0 32px;
 }
 
 .hero-split {
@@ -382,7 +382,7 @@ body {
 .scroll-hint {
   display: flex;
   justify-content: center;
-  padding-top: 32px;
+  padding-top: 16px;
   animation: bounce 2s ease infinite;
   color: var(--color-gray);
   opacity: 0.6;

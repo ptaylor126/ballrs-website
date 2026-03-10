@@ -29,7 +29,7 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 80px;
+  scroll-padding-top: 110px;
 }
 
 body {
@@ -56,19 +56,14 @@ body {
   right: 0;
   background-color: var(--color-cream);
   z-index: 100;
-  border-bottom: var(--border-width) solid var(--color-black);
   transition: box-shadow 0.3s;
-}
-
-.header.scrolled {
-  box-shadow: 0 4px 0 var(--color-black);
 }
 
 .header-inner {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 64px;
+  height: 100px;
 }
 
 .logo {
@@ -80,15 +75,9 @@ body {
 }
 
 .logo-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-}
-
-.logo-text {
-  font-size: 22px;
-  font-weight: 900;
-  letter-spacing: 2px;
+  width: 88px;
+  height: 88px;
+  border-radius: 18px;
 }
 
 /* Desktop nav */
@@ -262,7 +251,7 @@ body {
 
 /* ========== Hero Section ========== */
 .hero {
-  padding: 104px 0 60px;
+  padding: 120px 0 60px;
 }
 
 .hero-split {
@@ -942,7 +931,7 @@ body {
 /* Mobile */
 @media (max-width: 768px) {
   html {
-    scroll-padding-top: 64px;
+    scroll-padding-top: 110px;
   }
 
   /* Header */
@@ -960,7 +949,7 @@ body {
 
   /* Hero */
   .hero {
-    padding: 88px 0 40px;
+    padding: 120px 0 40px;
   }
 
   .hero-split {

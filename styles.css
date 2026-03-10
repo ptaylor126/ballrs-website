@@ -269,7 +269,7 @@ body {
   font-size: 72px;
   font-weight: 900;
   letter-spacing: 3px;
-  line-height: 0.95;
+  line-height: 1.15;
   margin-bottom: 20px;
   color: var(--color-black);
 }

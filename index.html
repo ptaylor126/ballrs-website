@@ -41,7 +41,7 @@
                 <a href="#games">Games</a>
                 <a href="#compete">Compete</a>
                 <a href="#" onclick="event.preventDefault();openContact()">Contact</a>
-                <a href="#download" class="btn btn-primary btn-sm">Download</a>
+                <a href="#" onclick="event.preventDefault();scrollToDownload()" class="btn btn-primary btn-sm">Download</a>
             </nav>
             <button class="hamburger" id="hamburger" onclick="toggleNav()" aria-label="Menu">
                 <span></span>
@@ -58,7 +58,7 @@
         <a href="#games" onclick="closeNav()">Games</a>
         <a href="#compete" onclick="closeNav()">Compete</a>
         <a href="#" onclick="event.preventDefault();closeNav();openContact()">Contact</a>
-        <a href="#download" class="btn btn-primary" onclick="closeNav()">Download</a>
+        <a href="#" onclick="event.preventDefault();scrollToDownload()" class="btn btn-primary" onclick="closeNav()">Download</a>
     </nav>
 
     <!-- Hero Section -->
@@ -357,6 +357,16 @@
             document.getElementById('contactModal').classList.remove('open');
             document.body.style.overflow = '';
         }
+        // Scroll to download buttons and pulse them
+        function scrollToDownload() {
+            closeNav();
+            var el = document.getElementById('download');
+            var top = el.getBoundingClientRect().top + window.scrollY - 200;
+            window.scrollTo({ top: top, behavior: 'smooth' });
+            el.classList.add('pulse');
+            setTimeout(function() { el.classList.remove('pulse'); }, 2000);
+        }
+
         // Submit contact form via AJAX
         document.getElementById('contactForm').addEventListener('submit', function(e) {
             e.preventDefault();

@@ -378,6 +378,16 @@ body {
   height: auto;
 }
 
+/* Download pulse animation */
+.btn-group.pulse .btn {
+  animation: btn-pulse 0.5s ease 3;
+}
+
+@keyframes btn-pulse {
+  0%, 100% { transform: scale(1); box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--color-black); }
+  50% { transform: scale(1.06); box-shadow: 6px 6px 0 var(--color-black); }
+}
+
 /* Scroll hint */
 .scroll-hint {
   display: flex;

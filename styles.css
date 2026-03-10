@@ -378,6 +378,27 @@ body {
   height: auto;
 }
 
+/* Scroll hint */
+.scroll-hint {
+  display: flex;
+  justify-content: center;
+  padding-top: 32px;
+  animation: bounce 2s ease infinite;
+  color: var(--color-gray);
+  opacity: 0.6;
+  transition: opacity 0.3s;
+}
+
+.scroll-hint.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(8px); }
+}
+
 /* ========== Marquee Ticker ========== */
 .ticker {
   background: var(--color-black);
@@ -1024,6 +1045,10 @@ body {
   .sport-chip img {
     width: 20px;
     height: 20px;
+  }
+
+  .scroll-hint {
+    display: none;
   }
 
   /* Ticker */

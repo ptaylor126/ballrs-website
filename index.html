@@ -116,6 +116,9 @@
                 </div>
             </div>
         </div>
+        <div class="scroll-hint" id="scrollHint">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
     </section>
 
     <!-- Marquee Ticker -->
@@ -327,13 +330,19 @@
 
         document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
 
-        // Header shadow on scroll
+        // Header shadow on scroll + hide scroll hint
         const header = document.getElementById('header');
+        const scrollHint = document.getElementById('scrollHint');
         window.addEventListener('scroll', () => {
             if (window.scrollY > 10) {
                 header.classList.add('scrolled');
             } else {
                 header.classList.remove('scrolled');
+            }
+            if (window.scrollY > 50) {
+                scrollHint.classList.add('hidden');
+            } else {
+                scrollHint.classList.remove('hidden');
             }
         }, { passive: true });
 

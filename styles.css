@@ -365,22 +365,16 @@ body {
 /* Phone mockup */
 .hero-phone {
   flex-shrink: 0;
-  width: 320px;
+  width: 380px;
 }
 
 .phone-frame {
-  border: 3px solid var(--color-black);
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow: 8px 8px 0 var(--color-black);
   transform: rotate(2deg);
-  transition: transform 0.3s, box-shadow 0.3s;
-  background: var(--color-white);
+  transition: transform 0.3s;
 }
 
 .phone-frame:hover {
-  transform: rotate(0deg) translate(-2px, -2px);
-  box-shadow: 10px 10px 0 var(--color-black);
+  transform: rotate(0deg);
 }
 
 .phone-screenshot {
@@ -795,7 +789,7 @@ body {
   }
 
   .hero-phone {
-    width: 260px;
+    width: 300px;
   }
 
   .hero-title {
@@ -846,12 +840,8 @@ body {
 
   .hero-phone {
     order: 2;
-    width: 260px;
+    width: 280px;
     margin: 0 auto;
-  }
-
-  .phone-frame {
-    transform: rotate(0deg);
   }
 
   .hero-stats {

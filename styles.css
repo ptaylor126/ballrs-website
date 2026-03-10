@@ -257,7 +257,7 @@ body {
 .hero-split {
   display: flex;
   align-items: center;
-  gap: 60px;
+  gap: 32px;
 }
 
 .hero-text {

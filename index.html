@@ -3,23 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ballrs — Think You Know Ball?</title>
-    <meta name="description" content="Sports trivia. Daily puzzles. Seven game modes. Four sports. Twenty-eight daily puzzles. Play Clue Drop, Career Path, Over Under, Brackets, Oddball, Zero-In, and Ranked for NBA, NFL, MLB, and Premier League.">
-    <meta name="keywords" content="sports trivia, NBA trivia, NFL trivia, MLB trivia, Premier League trivia, sports quiz, daily puzzle, clue drop, career path, over under, brackets, oddball, zero-in, ranked">
+    <title>Ballrs — Free Sports Trivia App | NBA, NFL, MLB & Premier League Daily Puzzles</title>
+    <meta name="description" content="Ballrs is a free sports trivia app with 7 game modes and 28 daily puzzles across NBA, NFL, MLB, and Premier League. Play Clue Drop, Career Path, Over Under, Brackets, Oddball, Zero-In, and Ranked. Download on iOS and Android.">
+    <meta name="keywords" content="sports trivia app, NBA trivia, NFL trivia, MLB trivia, Premier League trivia, sports quiz app, daily sports puzzle, sports guessing game, basketball trivia, football trivia, baseball trivia, soccer trivia, clue drop, career path, over under, brackets, oddball, zero-in, ranked, free sports trivia, sports trivia game, daily trivia app">
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://ballrs.net">
 
     <!-- Open Graph -->
-    <meta property="og:title" content="Ballrs — Think You Know Ball?">
-    <meta property="og:description" content="Sports trivia. Daily puzzles. Seven game modes. Four sports. Twenty-eight daily puzzles.">
+    <meta property="og:title" content="Ballrs — Think You Know Ball? | Free Sports Trivia App">
+    <meta property="og:description" content="7 game modes, 4 sports, 28 daily puzzles. Test your NBA, NFL, MLB, and Premier League knowledge with Clue Drop, Career Path, Brackets, and more. Free on iOS and Android.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://ballrs.net">
     <meta property="og:image" content="https://ballrs.net/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Ballrs - Sports trivia app with 7 game modes across NBA, NFL, MLB, and Premier League">
+    <meta property="og:site_name" content="Ballrs">
+    <meta property="og:locale" content="en_US">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@ballrs_app">
-    <meta name="twitter:title" content="Ballrs — Think You Know Ball?">
-    <meta name="twitter:description" content="Sports trivia. Daily puzzles. Seven game modes. Four sports. Twenty-eight daily puzzles.">
+    <meta name="twitter:title" content="Ballrs — Think You Know Ball? | Free Sports Trivia App">
+    <meta name="twitter:description" content="7 game modes, 4 sports, 28 daily puzzles. Test your NBA, NFL, MLB, and Premier League knowledge. Free on iOS and Android.">
     <meta name="twitter:image" content="https://ballrs.net/og-image.png">
+    <meta name="twitter:image:alt" content="Ballrs - Sports trivia app with 7 game modes across NBA, NFL, MLB, and Premier League">
 
     <!-- Favicon -->
     <link rel="icon" href="/favicon.ico?v=3" sizes="32x32">
@@ -29,6 +38,60 @@
     <link rel="manifest" href="/site.webmanifest">
 
     <link rel="stylesheet" href="styles.css">
+
+    <!-- Structured Data - SoftwareApplication -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Ballrs",
+      "description": "Sports trivia app with 7 game modes across NBA, NFL, MLB, and Premier League. 28 daily puzzles including Clue Drop, Career Path, Over Under, Brackets, Oddball, Zero-In, and Ranked.",
+      "url": "https://ballrs.net",
+      "applicationCategory": "GameApplication",
+      "operatingSystem": "iOS, Android",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "image": "https://ballrs.net/og-image.png",
+      "screenshot": [
+        "https://ballrs.net/gameplay-1.png",
+        "https://ballrs.net/gameplay-2.png",
+        "https://ballrs.net/gameplay-3.png",
+        "https://ballrs.net/gameplay-4.png"
+      ]
+    }
+    </script>
+
+    <!-- Structured Data - Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Ballrs",
+      "url": "https://ballrs.net",
+      "logo": "https://ballrs.net/favicon.png",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "hello@ballrs.net",
+        "contactType": "customer support"
+      },
+      "sameAs": [
+        "https://twitter.com/ballrs_app"
+      ]
+    }
+    </script>
+
+    <!-- Structured Data - WebSite (enables sitelinks search) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Ballrs",
+      "url": "https://ballrs.net"
+    }
+    </script>
 </head>
 <body>
     <!-- Header -->
@@ -61,6 +124,7 @@
         <a href="#" onclick="event.preventDefault();scrollToDownload()" class="btn btn-primary" onclick="closeNav()">Download</a>
     </nav>
 
+    <main>
     <!-- Hero Section -->
     <section class="hero">
         <div class="container hero-split">
@@ -283,6 +347,8 @@
         </div>
     </div>
 
+    </main>
+
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
@@ -304,7 +370,7 @@
                         <h4>Connect</h4>
                         <ul>
                             <li><a href="mailto:hello@ballrs.net">hello@ballrs.net</a></li>
-                            <li><a href="https://twitter.com/ballrs_app" target="_blank" rel="noopener">@ballrs_app</a></li>
+                            <li><a href="https://twitter.com/ballrs_app" target="_blank" rel="noopener noreferrer">@ballrs_app</a></li>
                         </ul>
                     </div>
                 </div>

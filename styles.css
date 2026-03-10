@@ -553,27 +553,16 @@ body {
   background: rgba(255, 255, 255, 0.1);
 }
 
-.compete-icon {
-  width: 48px;
-  height: 48px;
-  margin: 0 auto 16px;
-}
-
-.compete-icon svg {
-  width: 48px;
-  height: 48px;
-}
-
 .compete-title {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 800;
-  color: var(--color-cream);
+  color: var(--color-white);
   margin-bottom: 8px;
 }
 
 .compete-desc {
-  color: var(--color-gray);
-  font-size: 14px;
+  color: #B0B0B0;
+  font-size: 15px;
   line-height: 1.6;
 }
 
@@ -940,17 +929,6 @@ body {
 
   .compete-card {
     padding: 20px 16px;
-  }
-
-  .compete-icon {
-    width: 40px;
-    height: 40px;
-    margin-bottom: 12px;
-  }
-
-  .compete-icon svg {
-    width: 40px;
-    height: 40px;
   }
 
   .compete-title {

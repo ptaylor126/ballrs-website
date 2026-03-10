@@ -361,7 +361,7 @@
         function scrollToDownload() {
             closeNav();
             var el = document.getElementById('download');
-            var top = el.getBoundingClientRect().top + window.scrollY - 200;
+            var top = el.getBoundingClientRect().top + window.scrollY - (window.innerHeight / 2);
             window.scrollTo({ top: top, behavior: 'smooth' });
             el.classList.add('pulse');
             setTimeout(function() { el.classList.remove('pulse'); }, 2000);

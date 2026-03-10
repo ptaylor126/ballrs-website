@@ -110,6 +110,10 @@ body {
   color: var(--color-teal);
 }
 
+.nav a.btn:hover {
+  color: var(--color-white);
+}
+
 .nav .btn-sm {
   padding: 10px 20px;
   font-size: 14px;

@@ -29,7 +29,7 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 110px;
+  scroll-padding-top: 150px;
 }
 
 body {
@@ -63,7 +63,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 100px;
+  height: 140px;
 }
 
 .logo {
@@ -75,9 +75,9 @@ body {
 }
 
 .logo-icon {
-  width: 88px;
-  height: 88px;
-  border-radius: 18px;
+  width: 120px;
+  height: 120px;
+  border-radius: 24px;
 }
 
 /* Desktop nav */
@@ -251,7 +251,7 @@ body {
 
 /* ========== Hero Section ========== */
 .hero {
-  padding: 120px 0 60px;
+  padding: 160px 0 60px;
 }
 
 .hero-split {
@@ -931,7 +931,7 @@ body {
 /* Mobile */
 @media (max-width: 768px) {
   html {
-    scroll-padding-top: 110px;
+    scroll-padding-top: 150px;
   }
 
   /* Header */
@@ -949,7 +949,7 @@ body {
 
   /* Hero */
   .hero {
-    padding: 120px 0 40px;
+    padding: 160px 0 40px;
   }
 
   .hero-split {

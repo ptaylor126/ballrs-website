@@ -488,13 +488,15 @@ body {
   justify-content: center;
   align-items: center;
   position: relative;
-  height: 500px;
+  height: 520px;
 }
 
 .gameplay-card {
   position: absolute;
   width: 240px;
-  transition: transform 0.4s ease, box-shadow 0.3s ease;
+  opacity: 0;
+  transform: translateY(60px) rotate(0deg) scale(0.9);
+  transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease;
   cursor: default;
 }
 
@@ -503,123 +505,46 @@ body {
   height: auto;
   display: block;
   border-radius: 24px;
-  filter: drop-shadow(0 4px 20px rgba(0,0,0,0.15));
+  filter: drop-shadow(0 8px 24px rgba(0,0,0,0.18));
 }
 
-.gameplay-card-1 {
-  transform: rotate(-8deg) translateX(-220px);
-  z-index: 1;
-  transition-delay: 0s;
+/* Initial hidden state — all stacked */
+.gameplay-card-1 { transition-delay: 0.1s; z-index: 1; }
+.gameplay-card-2 { transition-delay: 0.3s; z-index: 3; }
+.gameplay-card-3 { transition-delay: 0.5s; z-index: 2; }
+
+/* Fan out when visible */
+.gameplay-cards.fan-in .gameplay-card {
+  opacity: 1;
 }
 
-.gameplay-card-2 {
-  transform: rotate(0deg) translateY(-10px);
-  z-index: 3;
-  transition-delay: 0.15s;
+.gameplay-cards.fan-in .gameplay-card-1 {
+  transform: rotate(-6deg) translateX(-260px) translateY(10px);
 }
 
-.gameplay-card-3 {
-  transform: rotate(8deg) translateX(220px);
-  z-index: 2;
-  transition-delay: 0.3s;
+.gameplay-cards.fan-in .gameplay-card-2 {
+  transform: rotate(0deg) translateY(-10px) scale(1.02);
 }
 
-.gameplay-card:hover {
+.gameplay-cards.fan-in .gameplay-card-3 {
+  transform: rotate(6deg) translateX(260px) translateY(10px);
+}
+
+/* Hover — lift and straighten */
+.gameplay-cards.fan-in .gameplay-card:hover {
   z-index: 10;
-  transform: rotate(0deg) translateY(-16px) scale(1.04);
 }
 
-/* Override individual hover so they all straighten and lift */
-.gameplay-card-1:hover {
-  transform: rotate(0deg) translateX(-220px) translateY(-16px) scale(1.04);
+.gameplay-cards.fan-in .gameplay-card-1:hover {
+  transform: rotate(-2deg) translateX(-260px) translateY(-8px) scale(1.05);
 }
 
-.gameplay-card-3:hover {
-  transform: rotate(0deg) translateX(220px) translateY(-16px) scale(1.04);
+.gameplay-cards.fan-in .gameplay-card-2:hover {
+  transform: rotate(0deg) translateY(-20px) scale(1.07);
 }
 
-/* Tablet */
-@media (max-width: 1024px) {
-  .gameplay-cards {
-    height: 420px;
-  }
-
-  .gameplay-card {
-    width: 200px;
-  }
-
-  .gameplay-card-1 {
-    transform: rotate(-8deg) translateX(-170px);
-  }
-
-  .gameplay-card-3 {
-    transform: rotate(8deg) translateX(170px);
-  }
-
-  .gameplay-card-1:hover {
-    transform: rotate(0deg) translateX(-170px) translateY(-16px) scale(1.04);
-  }
-
-  .gameplay-card-3:hover {
-    transform: rotate(0deg) translateX(170px) translateY(-16px) scale(1.04);
-  }
-}
-
-/* Mobile */
-@media (max-width: 768px) {
-  .gameplay {
-    padding: 60px 0;
-  }
-
-  .gameplay-cards {
-    height: 360px;
-  }
-
-  .gameplay-card {
-    width: 160px;
-  }
-
-  .gameplay-card-1 {
-    transform: rotate(-8deg) translateX(-120px);
-  }
-
-  .gameplay-card-3 {
-    transform: rotate(8deg) translateX(120px);
-  }
-
-  .gameplay-card-1:hover {
-    transform: rotate(0deg) translateX(-120px) translateY(-16px) scale(1.04);
-  }
-
-  .gameplay-card-3:hover {
-    transform: rotate(0deg) translateX(120px) translateY(-16px) scale(1.04);
-  }
-}
-
-@media (max-width: 380px) {
-  .gameplay-cards {
-    height: 300px;
-  }
-
-  .gameplay-card {
-    width: 130px;
-  }
-
-  .gameplay-card-1 {
-    transform: rotate(-8deg) translateX(-95px);
-  }
-
-  .gameplay-card-3 {
-    transform: rotate(8deg) translateX(95px);
-  }
-
-  .gameplay-card-1:hover {
-    transform: rotate(0deg) translateX(-95px) translateY(-12px) scale(1.04);
-  }
-
-  .gameplay-card-3:hover {
-    transform: rotate(0deg) translateX(95px) translateY(-12px) scale(1.04);
-  }
+.gameplay-cards.fan-in .gameplay-card-3:hover {
+  transform: rotate(2deg) translateX(260px) translateY(-8px) scale(1.05);
 }
 
 /* ========== Section Title ========== */
@@ -1115,6 +1040,13 @@ body {
 
 /* Tablet */
 @media (max-width: 1024px) {
+  .gameplay-cards { height: 440px; }
+  .gameplay-card { width: 200px; }
+  .gameplay-cards.fan-in .gameplay-card-1 { transform: rotate(-6deg) translateX(-200px) translateY(10px); }
+  .gameplay-cards.fan-in .gameplay-card-3 { transform: rotate(6deg) translateX(200px) translateY(10px); }
+  .gameplay-cards.fan-in .gameplay-card-1:hover { transform: rotate(-2deg) translateX(-200px) translateY(-8px) scale(1.05); }
+  .gameplay-cards.fan-in .gameplay-card-3:hover { transform: rotate(2deg) translateX(200px) translateY(-8px) scale(1.05); }
+
   .hero-split {
     gap: 40px;
   }
@@ -1231,6 +1163,14 @@ body {
     width: 20px;
     height: 20px;
   }
+
+  .gameplay { padding: 48px 0; }
+  .gameplay-cards { height: 360px; }
+  .gameplay-card { width: 150px; }
+  .gameplay-cards.fan-in .gameplay-card-1 { transform: rotate(-6deg) translateX(-120px) translateY(8px); }
+  .gameplay-cards.fan-in .gameplay-card-3 { transform: rotate(6deg) translateX(120px) translateY(8px); }
+  .gameplay-cards.fan-in .gameplay-card-1:hover { transform: rotate(-2deg) translateX(-120px) translateY(-8px) scale(1.05); }
+  .gameplay-cards.fan-in .gameplay-card-3:hover { transform: rotate(2deg) translateX(120px) translateY(-8px) scale(1.05); }
 
   .scroll-hint {
     display: none;
@@ -1350,6 +1290,13 @@ body {
   .compete-grid {
     grid-template-columns: 1fr;
   }
+
+  .gameplay-cards { height: 300px; }
+  .gameplay-card { width: 120px; }
+  .gameplay-cards.fan-in .gameplay-card-1 { transform: rotate(-6deg) translateX(-90px) translateY(8px); }
+  .gameplay-cards.fan-in .gameplay-card-3 { transform: rotate(6deg) translateX(90px) translateY(8px); }
+  .gameplay-cards.fan-in .gameplay-card-1:hover { transform: rotate(-2deg) translateX(-90px) translateY(-8px) scale(1.05); }
+  .gameplay-cards.fan-in .gameplay-card-3:hover { transform: rotate(2deg) translateX(90px) translateY(-8px) scale(1.05); }
 }
 
 /* Reduced motion */

@@ -136,14 +136,14 @@
     <!-- Gameplay Showcase -->
     <section class="gameplay">
         <div class="container">
-            <div class="gameplay-cards">
-                <div class="gameplay-card gameplay-card-1 fade-up">
+            <div class="gameplay-cards" id="gameplayCards">
+                <div class="gameplay-card gameplay-card-1">
                     <img src="gameplay-1.png" alt="Gameplay screenshot 1" />
                 </div>
-                <div class="gameplay-card gameplay-card-2 fade-up">
+                <div class="gameplay-card gameplay-card-2">
                     <img src="gameplay-2.png" alt="Gameplay screenshot 2" />
                 </div>
-                <div class="gameplay-card gameplay-card-3 fade-up">
+                <div class="gameplay-card gameplay-card-3">
                     <img src="gameplay-3.png" alt="Gameplay screenshot 3" />
                 </div>
             </div>
@@ -334,6 +334,18 @@
         }, observerOptions);
 
         document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+        // Gameplay cards fan-in
+        var gpObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fan-in');
+                    gpObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.3 });
+        var gpCards = document.getElementById('gameplayCards');
+        if (gpCards) gpObserver.observe(gpCards);
 
         // Header shadow on scroll + hide scroll hint
         const header = document.getElementById('header');

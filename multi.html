@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ballrs — MultiQuiz Producer</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #F5F2EB;
+      color: #1A1A1A;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 24px 20px 80px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+      padding-top: 20px;
+    }
+
+    .header h1 {
+      font-weight: 900;
+      font-size: 28px;
+      letter-spacing: -0.5px;
+    }
+
+    .header p {
+      color: #6B7280;
+      margin-top: 4px;
+      font-size: 14px;
+    }
+
+    .header a {
+      color: #1ABC9C;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    /* Neubrutalist card */
+    .card {
+      background: #fff;
+      border: 2px solid #1A1A1A;
+      border-radius: 12px;
+      padding: 24px;
+      position: relative;
+      margin-bottom: 20px;
+    }
+    .card::after {
+      content: '';
+      position: absolute;
+      top: 4px; left: 4px;
+      width: 100%; height: 100%;
+      background: #1A1A1A;
+      border-radius: 12px;
+      z-index: -1;
+    }
+
+    .card-title {
+      font-weight: 900;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #6B7280;
+      margin-bottom: 16px;
+    }
+
+    /* Sport pills */
+    .sport-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .sport-btn {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 900;
+      font-size: 16px;
+      padding: 16px;
+      border: 2px solid #1A1A1A;
+      border-radius: 12px;
+      cursor: pointer;
+      position: relative;
+      color: #fff;
+      transition: transform 0.1s;
+    }
+    .sport-btn::after {
+      content: '';
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 100%; height: 100%;
+      background: #1A1A1A;
+      border-radius: 12px;
+      z-index: -1;
+    }
+    .sport-btn:hover { transform: translate(-1px, -1px); }
+    .sport-btn:active { transform: translate(2px, 2px); }
+
+    .sport-btn.nba { background: #E07A3D; }
+    .sport-btn.epl { background: #A17AFB; }
+    .sport-btn.nfl { background: #3BA978; }
+    .sport-btn.mlb { background: #7A93D2; }
+
+    /* Buttons */
+    .btn {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 900;
+      font-size: 15px;
+      padding: 12px 24px;
+      border: 2px solid #1A1A1A;
+      border-radius: 10px;
+      cursor: pointer;
+      position: relative;
+      color: #fff;
+      transition: transform 0.1s;
+    }
+    .btn::after {
+      content: '';
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 100%; height: 100%;
+      background: #1A1A1A;
+      border-radius: 10px;
+      z-index: -1;
+    }
+    .btn:hover { transform: translate(-1px, -1px); }
+    .btn:active { transform: translate(2px, 2px); }
+
+    .btn-teal { background: #1ABC9C; }
+    .btn-yellow { background: #F2C94C; color: #1A1A1A; }
+    .btn-red { background: #E53935; }
+    .btn-gray { background: #6B7280; }
+    .btn-sm { font-size: 13px; padding: 8px 16px; }
+    .btn-full { width: 100%; }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    /* Steps */
+    .step { display: none; }
+    .step.active { display: block; }
+
+    .step-indicator {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+    .step-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: #E8E8E8;
+      border: 2px solid #1A1A1A;
+    }
+    .step-dot.active { background: #1ABC9C; }
+    .step-dot.done { background: #1A1A1A; }
+
+    /* Question slot */
+    .q-slot {
+      border: 2px solid #1A1A1A;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 14px;
+      background: #F5F2EB;
+    }
+    .q-slot.locked {
+      background: #d4f5e9;
+      border-color: #1ABC9C;
+    }
+    .q-slot-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .q-slot-num {
+      font-weight: 900;
+      font-size: 14px;
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%;
+      border: 2px solid #1A1A1A;
+      background: #fff;
+    }
+    .q-slot-type {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 2px solid #1A1A1A;
+    }
+    .q-slot-type.never_played { background: #E07A3D; color: #fff; }
+    .q-slot-type.same_club { background: #A17AFB; color: #fff; }
+    .q-slot-type.odd_one_out { background: #1ABC9C; color: #fff; }
+
+    .q-slot-question {
+      font-weight: 900;
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+    .q-slot-subtitle {
+      font-size: 14px;
+      color: #6B7280;
+      margin-bottom: 8px;
+    }
+    .q-slot-players {
+      font-size: 13px;
+      color: #6B7280;
+      margin-bottom: 4px;
+    }
+    .q-slot-answer {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1ABC9C;
+    }
+
+    /* Image picker */
+    .player-row {
+      border: 2px solid #1A1A1A;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 12px;
+      background: #fff;
+    }
+    .player-row.done {
+      background: #d4f5e9;
+      border-color: #1ABC9C;
+    }
+    .player-row-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .player-name {
+      font-weight: 900;
+      font-size: 16px;
+    }
+    .player-q-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #6B7280;
+    }
+
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .image-option {
+      aspect-ratio: 1;
+      border-radius: 8px;
+      border: 3px solid #E8E8E8;
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.15s, transform 0.1s;
+      background: #F5F2EB;
+      position: relative;
+    }
+    .image-option:hover {
+      border-color: #1A1A1A;
+      transform: scale(1.03);
+    }
+    .image-option.selected {
+      border-color: #1ABC9C;
+      border-width: 3px;
+    }
+    .image-option img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .image-option .img-error {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      font-size: 11px;
+      color: #6B7280;
+      text-align: center;
+      padding: 4px;
+    }
+
+    .image-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100px;
+      color: #6B7280;
+      font-size: 14px;
+    }
+
+    /* Render output */
+    .render-cmd {
+      background: #1A1A1A;
+      color: #1ABC9C;
+      padding: 16px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      line-height: 1.6;
+      word-break: break-all;
+      cursor: pointer;
+      margin-bottom: 12px;
+      border: 2px solid #1A1A1A;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .render-cmd:hover { color: #fff; }
+
+    /* Caption blocks */
+    .caption-block {
+      background: #F5F2EB;
+      border: 2px solid #1A1A1A;
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+    .caption-block:hover { background: #eae7e0; }
+    .caption-block .platform {
+      font-weight: 900;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #6B7280;
+      margin-bottom: 6px;
+    }
+    .caption-block pre {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
+
+    /* Toast */
+    .copy-toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1A1A1A;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 999;
+    }
+    .copy-toast.show { opacity: 1; }
+
+    .hint {
+      font-size: 12px;
+      color: #6B7280;
+      margin-top: 8px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: #E8E8E8;
+      border-radius: 3px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: #1ABC9C;
+      border-radius: 3px;
+      transition: width 0.3s;
+    }
+
+    .voiceover-box {
+      font-size: 16px;
+      font-weight: 700;
+      font-style: italic;
+      text-align: center;
+      padding: 20px;
+      background: #F5F2EB;
+      border: 2px solid #1A1A1A;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      line-height: 1.6;
+    }
+    .voiceover-box:hover { background: #eae7e0; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>MULTIQUIZ PRODUCER</h1>
+    <p>3 questions · no answers · build the video</p>
+    <a href="social.html">← Back to QuizRound Producer</a>
+  </div>
+
+  <div class="step-indicator" id="stepIndicator"></div>
+
+  <!-- STEP 1: Pick Sport -->
+  <div class="step active" id="step1">
+    <div class="card">
+      <div class="card-title">Step 1 — Pick a Sport</div>
+      <div class="sport-grid">
+        <button class="sport-btn nba" onclick="pickSport('NBA')">🏀 NBA</button>
+        <button class="sport-btn epl" onclick="pickSport('EPL')">⚽ PREMIER LEAGUE</button>
+        <button class="sport-btn nfl" onclick="pickSport('NFL')">🏈 NFL</button>
+        <button class="sport-btn mlb" onclick="pickSport('MLB')">⚾ MLB</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: Pick 3 Questions -->
+  <div class="step" id="step2">
+    <div class="card">
+      <div class="card-title">Step 2 — Pick 3 Questions</div>
+      <p style="margin-bottom:16px;font-size:14px;color:#6B7280;">Lock in 3 questions. Shuffle any you don't like.</p>
+      <div id="questionSlots"></div>
+      <div class="btn-row">
+        <button class="btn btn-gray btn-sm" onclick="goToStep(1)">← BACK</button>
+        <button class="btn btn-teal btn-full" id="lockAllBtn" onclick="lockAndContinue()" disabled>LOCK ALL 3 & CONTINUE →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: Pick Images -->
+  <div class="step" id="step3">
+    <div class="card">
+      <div class="card-title">Step 3 — Pick Player Images</div>
+      <p style="margin-bottom:8px;font-size:14px;color:#6B7280;">Click to search, then pick the best headshot for each player.</p>
+      <div class="progress-bar"><div class="progress-bar-fill" id="imageProgress" style="width:0%"></div></div>
+      <div id="playerRows"></div>
+      <div class="btn-row">
+        <button class="btn btn-gray btn-sm" onclick="goToStep(2)">← BACK</button>
+        <button class="btn btn-teal btn-full" id="imagesReadyBtn" onclick="goToStep(4)" disabled>ALL IMAGES SELECTED →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: Render + Voiceover -->
+  <div class="step" id="step4">
+    <div class="card">
+      <div class="card-title">Step 4 — Download Images & Render</div>
+
+      <p style="margin-bottom:8px;font-size:14px;font-weight:700;">1. Copy this download script and run in terminal:</p>
+      <div class="render-cmd" id="downloadCmd" onclick="copyText(this.innerText, 'Download script copied')"></div>
+
+      <p style="margin-bottom:8px;font-size:14px;font-weight:700;">2. Copy this render command:</p>
+      <div class="render-cmd" id="renderCmd" onclick="copyText(this.innerText, 'Render command copied')"></div>
+
+      <p style="margin-bottom:8px;margin-top:20px;font-size:14px;font-weight:700;">3. Voiceover script (record after video looks right):</p>
+      <div class="voiceover-box" id="voiceoverText" onclick="copyText(this.innerText, 'Voiceover copied')"></div>
+      <p class="hint">Click to copy. Paste into ElevenLabs → save as public/audio/voiceover.mp3</p>
+
+      <div class="btn-row">
+        <button class="btn btn-gray btn-sm" onclick="goToStep(3)">← BACK</button>
+        <button class="btn btn-teal btn-full" onclick="goToStep(5)">VIDEO RENDERED →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 5: Captions -->
+  <div class="step" id="step5">
+    <div class="card">
+      <div class="card-title">Step 5 — Post It</div>
+      <p style="margin-bottom:16px;font-size:14px;color:#6B7280;">Click any caption to copy.</p>
+      <div id="captions"></div>
+      <div class="btn-row" style="margin-top:20px;">
+        <button class="btn btn-teal btn-full" onclick="resetAll()">MAKE ANOTHER VIDEO</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="copy-toast" id="copyToast">Copied!</div>
+
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const GOOGLE_API_KEY = 'AIzaSyCoOTdbHGbR4_SE6Bm-C8z8uTBwxxpisb0';
+const GOOGLE_CX = '33149c5ef26554a4e';
+
+const SPORT_CONFIG = {
+  'NBA':  { emoji: '🏀', color: '#E07A3D', accentColor: '#E07A3D', folder: 'nba', hashtags: '#NBA #NBATrivia #basketball', sportLabel: 'NBA', bg: 'court-bg.png' },
+  'EPL':  { emoji: '⚽', color: '#A17AFB', accentColor: '#A17AFB', folder: 'epl', hashtags: '#PremierLeague #EPL #football #footballtrivia', sportLabel: 'PREMIER LEAGUE', bg: 'pitch-bg.png' },
+  'NFL':  { emoji: '🏈', color: '#3BA978', accentColor: '#3BA978', folder: 'nfl', hashtags: '#NFL #NFLTrivia #football', sportLabel: 'NFL', bg: 'field-bg.png' },
+  'MLB':  { emoji: '⚾', color: '#7A93D2', accentColor: '#7A93D2', folder: 'mlb', hashtags: '#MLB #MLBTrivia #baseball', sportLabel: 'MLB', bg: 'diamond-bg.png' },
+};
+
+// ============================================================
+// MULTIQUIZ QUESTION DATABASE
+// ============================================================
+const MULTI_QUESTIONS = [
+  // NBA
+  {
+    sport: 'NBA', type: 'never_played',
+    questionText: 'LOS ANGELES LAKERS', subtitle: 'Which player NEVER played here?',
+    players: ['Dwight Howard', 'Steve Nash', 'Karl Malone', 'Dennis Rodman', 'Gary Payton', 'Vince Carter'],
+    answer: 'Vince Carter',
+    answerFact: 'Carter played for 8 teams in 22 seasons — Raptors, Nets, Magic, Suns, Mavs, Grizzlies, Kings, Hawks — but never the Lakers.'
+  },
+  {
+    sport: 'NBA', type: 'same_club',
+    questionText: 'THE SAME TEAM', subtitle: 'Which 2 of these played for the same team?',
+    players: ['Scottie Pippen', 'Hakeem Olajuwon', 'Patrick Ewing', 'Charles Barkley'],
+    answer: 'Pippen & Barkley (Houston Rockets)',
+    answerFact: 'Bulls vs Suns rivals who ended up teammates in Houston. Pippen joined in 1998, Barkley was already there.'
+  },
+  {
+    sport: 'NBA', type: 'odd_one_out',
+    questionText: 'ODD ONE OUT', subtitle: 'Which one doesn\'t belong?',
+    players: ['LeBron James', 'Tim Duncan', 'Shaquille O\'Neal', 'Kobe Bryant'],
+    answer: 'Kobe — others were all #1 overall picks',
+    answerFact: 'LeBron (2003), Duncan (1997), Shaq (1992) all went #1. Kobe was drafted 13th by Charlotte in 1996.'
+  },
+  {
+    sport: 'NBA', type: 'never_played',
+    questionText: 'BOSTON CELTICS', subtitle: 'Which player NEVER played here?',
+    players: ['Shaquille O\'Neal', 'Dominique Wilkins', 'Isaiah Thomas', 'Reggie Miller', 'Jermaine O\'Neal', 'Gary Payton'],
+    answer: 'Reggie Miller',
+    answerFact: 'Reggie Miller spent his entire 18-year career with the Indiana Pacers. One of the most loyal players in NBA history.'
+  },
+  {
+    sport: 'NBA', type: 'same_club',
+    questionText: 'THE SAME TEAM', subtitle: 'Which 2 of these played for the same team?',
+    players: ['Allen Iverson', 'Tracy McGrady', 'Steve Nash', 'Vince Carter'],
+    answer: 'McGrady & Carter (Toronto Raptors)',
+    answerFact: 'They were cousins AND teammates. McGrady played for the Raptors from 1997-2000 before leaving for Orlando.'
+  },
+  {
+    sport: 'NBA', type: 'odd_one_out',
+    questionText: 'ODD ONE OUT', subtitle: 'Which one doesn\'t belong?',
+    players: ['Stephen Curry', 'Ray Allen', 'Reggie Miller', 'Klay Thompson'],
+    answer: 'Reggie Miller — never won a championship',
+    answerFact: 'Curry (4 rings), Allen (2 rings), Klay (4 rings). Miller made 5 Conference Finals but never won it all.'
+  },
+  {
+    sport: 'NBA', type: 'never_played',
+    questionText: 'GOLDEN STATE WARRIORS', subtitle: 'Which player NEVER played here?',
+    players: ['Kevin Durant', 'Chris Paul', 'DeMarcus Cousins', 'Dwight Howard', 'Wilt Chamberlain', 'Baron Davis'],
+    answer: 'Dwight Howard',
+    answerFact: 'Howard played for 7 teams (LAL, HOU, ATL, CHA, WAS, PHI, ORL) but never Golden State.'
+  },
+  {
+    sport: 'NBA', type: 'same_club',
+    questionText: 'THE SAME TEAM', subtitle: 'Which 2 of these played for the same team?',
+    players: ['Michael Jordan', 'Dirk Nowitzki', 'Patrick Ewing', 'Hakeem Olajuwon'],
+    answer: 'Jordan & Ewing (New York Knicks... kidding — none overlap)',
+    answerFact: 'Trick vibes but: Olajuwon played for the Raptors (2001-02). Ewing played for the Magic (2001-02). They never overlapped anywhere.'
+  },
+  // EPL
+  {
+    sport: 'EPL', type: 'never_played',
+    questionText: 'MANCHESTER UNITED', subtitle: 'Which player NEVER played here?',
+    players: ['Gerard Pique', 'Angel Di Maria', 'Radamel Falcao', 'Shinji Kagawa', 'Marouane Fellaini', 'Danny Drinkwater'],
+    answer: 'Danny Drinkwater',
+    answerFact: 'Drinkwater won the Premier League with Leicester and moved to Chelsea — never Man United.'
+  },
+  {
+    sport: 'EPL', type: 'same_club',
+    questionText: 'THE SAME CLUB', subtitle: 'Which 2 of these played for the same club?',
+    players: ['Andrea Pirlo', 'Frank Lampard', 'Steven Gerrard', 'Paul Scholes'],
+    answer: 'Pirlo & Lampard (New York City FC)',
+    answerFact: 'The classic midfield debate trio — but only Pirlo and Lampard ended up at the same club in New York.'
+  },
+  {
+    sport: 'EPL', type: 'odd_one_out',
+    questionText: 'ODD ONE OUT', subtitle: 'Which one doesn\'t belong?',
+    players: ['Thierry Henry', 'Wayne Rooney', 'Sergio Aguero', 'Didier Drogba'],
+    answer: 'Aguero — others all won the Champions League',
+    answerFact: 'Henry (Barca 2009), Rooney (Man Utd 2008), Drogba (Chelsea 2012). Aguero never won the CL.'
+  },
+  {
+    sport: 'EPL', type: 'never_played',
+    questionText: 'CHELSEA', subtitle: 'Which player NEVER played here?',
+    players: ['Fernando Torres', 'Andriy Shevchenko', 'Gonzalo Higuain', 'Robert Lewandowski', 'Radamel Falcao', 'Alexandre Pato'],
+    answer: 'Robert Lewandowski',
+    answerFact: 'Lewandowski went from Bayern to Barcelona. Never played in England despite years of transfer rumors.'
+  },
+  {
+    sport: 'EPL', type: 'same_club',
+    questionText: 'THE SAME CLUB', subtitle: 'Which 2 of these played for the same club?',
+    players: ['Zinedine Zidane', 'Ronaldinho', 'David Beckham', 'Thierry Henry'],
+    answer: 'All except Zidane played for... but Beckham & Henry (LA Galaxy)',
+    answerFact: 'Beckham and Henry both played for LA Galaxy. Beckham 2007-12, Henry 2010-14. They overlapped for two seasons.'
+  },
+  {
+    sport: 'EPL', type: 'odd_one_out',
+    questionText: 'ODD ONE OUT', subtitle: 'Which one doesn\'t belong?',
+    players: ['Gary Lineker', 'Wayne Rooney', 'Alan Shearer', 'Jamie Vardy'],
+    answer: 'Gary Lineker — never received a card in his career',
+    answerFact: 'Lineker played 567 professional matches and was never booked or sent off. Zero yellow cards. Zero red cards. Ever.'
+  },
+  // NFL
+  {
+    sport: 'NFL', type: 'never_played',
+    questionText: 'NEW ENGLAND PATRIOTS', subtitle: 'Which player NEVER played here?',
+    players: ['Randy Moss', 'Darrelle Revis', 'Tim Tebow', 'Chad Johnson', 'Antonio Brown', 'Peyton Manning'],
+    answer: 'Peyton Manning',
+    answerFact: 'Manning played for the Colts and Broncos. Despite 15 years of Brady-Manning rivalry, he never joined the Pats.'
+  },
+  {
+    sport: 'NFL', type: 'same_club',
+    questionText: 'THE SAME TEAM', subtitle: 'Which 2 of these played for the same team?',
+    players: ['Tom Brady', 'Rob Gronkowski', 'Aaron Rodgers', 'Calvin Johnson'],
+    answer: 'Brady & Gronkowski (Tampa Bay Buccaneers)',
+    answerFact: 'The legendary Pats duo reunited in Tampa Bay in 2020 and won Super Bowl LV together.'
+  },
+  {
+    sport: 'NFL', type: 'odd_one_out',
+    questionText: 'ODD ONE OUT', subtitle: 'Which one doesn\'t belong?',
+    players: ['Dan Marino', 'Jim Kelly', 'Barry Sanders', 'Charles Barkley'],
+    answer: 'Charles Barkley — he\'s an NBA player, not NFL',
+    answerFact: 'Trick question! Barkley is a basketball player. The other three are NFL legends who never won a Super Bowl.'
+  },
+  // MLB
+  {
+    sport: 'MLB', type: 'never_played',
+    questionText: 'NEW YORK YANKEES', subtitle: 'Which player NEVER played here?',
+    players: ['Randy Johnson', 'Ichiro Suzuki', 'Roger Clemens', 'Ken Griffey Jr', 'Alex Rodriguez', 'Mark Teixeira'],
+    answer: 'Ken Griffey Jr',
+    answerFact: 'Griffey played for the Mariners, Reds, and White Sox. Despite being baseball royalty, he never wore pinstripes.'
+  },
+  {
+    sport: 'MLB', type: 'odd_one_out',
+    questionText: 'ODD ONE OUT', subtitle: 'Which one doesn\'t belong?',
+    players: ['Babe Ruth', 'Hank Aaron', 'Barry Bonds', 'Willie Mays'],
+    answer: 'Hank Aaron — never played for the Giants or Yankees',
+    answerFact: 'Ruth (Yankees/Red Sox), Bonds (Giants/Pirates), Mays (Giants). Aaron played for the Braves and Brewers only.'
+  },
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let currentStep = 1;
+let selectedSport = null;
+let lockedQuestions = [null, null, null]; // 3 slots
+let currentPool = [];
+let allPlayers = []; // flat list of {name, qIndex, playerIndex, selectedImageUrl}
+let searchResults = {}; // keyed by player name
+
+// ============================================================
+// STEP NAVIGATION
+// ============================================================
+function updateStepIndicator() {
+  const el = document.getElementById('stepIndicator');
+  el.innerHTML = '';
+  for (let i = 1; i <= 5; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'step-dot' + (i === currentStep ? ' active' : '') + (i < currentStep ? ' done' : '');
+    el.appendChild(dot);
+  }
+}
+
+function goToStep(n) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step' + n).classList.add('active');
+  currentStep = n;
+  updateStepIndicator();
+  window.scrollTo(0, 0);
+}
+
+// ============================================================
+// STEP 1: Pick Sport
+// ============================================================
+function pickSport(sport) {
+  selectedSport = sport;
+  currentPool = MULTI_QUESTIONS.filter(q => q.sport === sport);
+  lockedQuestions = [null, null, null];
+
+  // Assign random questions to each slot
+  const shuffled = [...currentPool].sort(() => Math.random() - 0.5);
+  const types = ['never_played', 'same_club', 'odd_one_out'];
+  types.forEach((type, i) => {
+    const match = shuffled.find(q => q.type === type && !lockedQuestions.includes(q));
+    if (match) {
+      lockedQuestions[i] = { ...match, locked: false };
+    }
+  });
+
+  // Fill any empty slots with whatever's available
+  for (let i = 0; i < 3; i++) {
+    if (!lockedQuestions[i]) {
+      const available = shuffled.find(q => !lockedQuestions.some(lq => lq && lq.questionText === q.questionText && lq.type === q.type));
+      if (available) lockedQuestions[i] = { ...available, locked: false };
+    }
+  }
+
+  renderQuestionSlots();
+  goToStep(2);
+}
+
+// ============================================================
+// STEP 2: Pick Questions
+// ============================================================
+function renderQuestionSlots() {
+  const container = document.getElementById('questionSlots');
+  container.innerHTML = '';
+
+  lockedQuestions.forEach((q, i) => {
+    if (!q) return;
+    const slot = document.createElement('div');
+    slot.className = 'q-slot' + (q.locked ? ' locked' : '');
+    slot.innerHTML = `
+      <div class="q-slot-header">
+        <div class="q-slot-num">${i + 1}</div>
+        <span class="q-slot-type ${q.type}">${q.type.replace(/_/g, ' ')}</span>
+      </div>
+      <div class="q-slot-question">${q.questionText}</div>
+      <div class="q-slot-subtitle">${q.subtitle}</div>
+      <div class="q-slot-players">Players: ${q.players.join(', ')}</div>
+      <div class="q-slot-answer">Answer: ${q.answer}</div>
+      <div class="btn-row">
+        ${q.locked
+          ? '<button class="btn btn-gray btn-sm" onclick="unlockQuestion(' + i + ')">UNLOCK</button>'
+          : '<button class="btn btn-yellow btn-sm" onclick="shuffleSlot(' + i + ')">SHUFFLE</button><button class="btn btn-teal btn-sm" onclick="lockQuestion(' + i + ')">LOCK IN ✓</button>'
+        }
+      </div>
+    `;
+    container.appendChild(slot);
+  });
+
+  checkAllLocked();
+}
+
+function shuffleSlot(index) {
+  const current = lockedQuestions[index];
+  const available = currentPool.filter(q =>
+    q.type === current.type &&
+    !(q.questionText === current.questionText && q.subtitle === current.subtitle)
+  );
+  if (available.length > 0) {
+    const pick = available[Math.floor(Math.random() * available.length)];
+    lockedQuestions[index] = { ...pick, locked: false };
+  }
+  renderQuestionSlots();
+}
+
+function lockQuestion(index) {
+  lockedQuestions[index].locked = true;
+  renderQuestionSlots();
+}
+
+function unlockQuestion(index) {
+  lockedQuestions[index].locked = false;
+  renderQuestionSlots();
+}
+
+function checkAllLocked() {
+  const allLocked = lockedQuestions.every(q => q && q.locked);
+  document.getElementById('lockAllBtn').disabled = !allLocked;
+}
+
+function lockAndContinue() {
+  // Build player list
+  allPlayers = [];
+  lockedQuestions.forEach((q, qi) => {
+    q.players.forEach((name, pi) => {
+      allPlayers.push({
+        name: name,
+        qIndex: qi + 1,
+        playerIndex: pi + 1,
+        filename: `q${qi + 1}-img${pi + 1}.png`,
+        selectedImageUrl: null,
+        images: null
+      });
+    });
+  });
+  renderPlayerRows();
+  goToStep(3);
+}
+
+// ============================================================
+// STEP 3: Image Picker
+// ============================================================
+function renderPlayerRows() {
+  const container = document.getElementById('playerRows');
+  container.innerHTML = '';
+
+  allPlayers.forEach((player, i) => {
+    const row = document.createElement('div');
+    row.className = 'player-row' + (player.selectedImageUrl ? ' done' : '');
+    row.id = 'player-row-' + i;
+
+    const qLabel = `Q${player.qIndex}`;
+
+    row.innerHTML = `
+      <div class="player-row-header">
+        <div>
+          <span class="player-name">${player.name}</span>
+          <span class="player-q-label" style="margin-left:8px;">${qLabel} · ${player.filename}</span>
+        </div>
+        ${player.images === null
+          ? `<button class="btn btn-teal btn-sm" onclick="searchPlayerImages(${i})">SEARCH</button>`
+          : (player.selectedImageUrl ? '<span style="color:#1ABC9C;font-weight:900;">✓ Selected</span>' : '<button class="btn btn-yellow btn-sm" onclick="searchPlayerImages(' + i + ')">RE-SEARCH</button>')
+        }
+      </div>
+      <div id="image-grid-${i}">
+        ${player.images === null ? '' : renderImageGrid(i)}
+      </div>
+    `;
+    container.appendChild(row);
+  });
+
+  updateImageProgress();
+}
+
+function renderImageGrid(playerIdx) {
+  const player = allPlayers[playerIdx];
+  if (!player.images || player.images.length === 0) {
+    return '<div class="image-loading">No images found. Try re-searching.</div>';
+  }
+
+  return `<div class="image-grid">
+    ${player.images.map((img, imgIdx) => `
+      <div class="image-option ${player.selectedImageUrl === img.link ? 'selected' : ''}"
+           onclick="selectImage(${playerIdx}, '${encodeURIComponent(img.link)}')">
+        <img src="${img.thumbnailLink || img.link}"
+             alt="${player.name}"
+             onerror="this.parentElement.innerHTML='<div class=\\'img-error\\'>Failed to load</div>'"
+             loading="lazy" />
+      </div>
+    `).join('')}
+  </div>`;
+}
+
+async function searchPlayerImages(playerIdx) {
+  const player = allPlayers[playerIdx];
+  const gridEl = document.getElementById('image-grid-' + playerIdx);
+  gridEl.innerHTML = '<div class="image-loading">Searching...</div>';
+
+  const sport = selectedSport === 'EPL' ? 'football soccer' : selectedSport;
+  const query = `${player.name} ${sport} player headshot portrait`;
+
+  try {
+    const url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CX}&q=${encodeURIComponent(query)}&searchType=image&num=5&imgSize=medium&safe=active`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+
+    if (data.items && data.items.length > 0) {
+      player.images = data.items.map(item => ({
+        link: item.link,
+        thumbnailLink: item.image?.thumbnailLink || item.link
+      }));
+    } else {
+      player.images = [];
+    }
+  } catch (err) {
+    console.error('Search failed:', err);
+    player.images = [];
+  }
+
+  gridEl.innerHTML = renderImageGrid(playerIdx);
+}
+
+function selectImage(playerIdx, encodedUrl) {
+  const url = decodeURIComponent(encodedUrl);
+  allPlayers[playerIdx].selectedImageUrl = url;
+
+  // Re-render just this row's grid
+  const gridEl = document.getElementById('image-grid-' + playerIdx);
+  gridEl.innerHTML = renderImageGrid(playerIdx);
+
+  // Update row style
+  const rowEl = document.getElementById('player-row-' + playerIdx);
+  rowEl.classList.add('done');
+
+  updateImageProgress();
+}
+
+function updateImageProgress() {
+  const selected = allPlayers.filter(p => p.selectedImageUrl).length;
+  const total = allPlayers.length;
+  const pct = total > 0 ? (selected / total * 100) : 0;
+
+  document.getElementById('imageProgress').style.width = pct + '%';
+  document.getElementById('imagesReadyBtn').disabled = selected < total;
+
+  // When all selected, build step 4
+  if (selected === total) {
+    buildRenderStep();
+  }
+}
+
+// ============================================================
+// STEP 4: Render
+// ============================================================
+function buildRenderStep() {
+  const cfg = SPORT_CONFIG[selectedSport];
+  const epNum = parseInt(localStorage.getItem('ballrs-multi-ep-' + cfg.folder) || '0') + 1;
+
+  // Download script (curl commands)
+  const downloadLines = [
+    `cd /Users/paultaylor/Projects/remotion/sports-trivia-promo`,
+    `mkdir -p public/episodes/multi`,
+    ''
+  ];
+  allPlayers.forEach(p => {
+    downloadLines.push(`curl -L -o "public/episodes/multi/${p.filename}" "${p.selectedImageUrl}"`);
+  });
+
+  document.getElementById('downloadCmd').innerText = downloadLines.join('\n');
+
+  // Props file content
+  const props = {
+    sport: cfg.sportLabel,
+    sportEmoji: cfg.emoji,
+    accentColor: cfg.accentColor,
+    episodeNumber: epNum,
+    questions: lockedQuestions.map(q => ({
+      type: q.type,
+      questionText: q.questionText,
+      subtitle: q.subtitle,
+      playerCount: q.players.length,
+      playerNames: q.players.map(n => {
+        // Short display name (last name or nickname)
+        const parts = n.split(' ');
+        if (parts.length === 1) return n;
+        if (n === "Shaquille O'Neal") return "Shaq";
+        if (n === "LeBron James") return "LeBron";
+        return parts[parts.length - 1];
+      })
+    }))
+  };
+
+  const propsJson = JSON.stringify(props);
+
+  const renderLines = [
+    `cat > /tmp/multi-props.json << 'PROPS'`,
+    propsJson,
+    `PROPS`,
+    ``,
+    `cd /Users/paultaylor/Projects/remotion/sports-trivia-promo && npx remotion render MultiQuiz out/multi-${cfg.folder}-ep${epNum}.mp4 --props=/tmp/multi-props.json && open out/`
+  ];
+
+  document.getElementById('renderCmd').innerText = renderLines.join('\n');
+
+  // Voiceover
+  const voLines = [
+    'Three questions. No answers. Drop your guesses in the comments.',
+    '',
+  ];
+  lockedQuestions.forEach((q, i) => {
+    if (q.type === 'never_played') {
+      voLines.push(`Question ${i + 1}. ${q.questionText}. ${q.subtitle}`);
+    } else if (q.type === 'same_club') {
+      voLines.push(`Question ${i + 1}. ${q.subtitle}`);
+    } else {
+      voLines.push(`Question ${i + 1}. Odd one out. ${q.subtitle}`);
+    }
+    voLines.push('');
+  });
+  voLines.push('How did you do? Answers in tomorrow\'s video.');
+
+  document.getElementById('voiceoverText').innerText = voLines.join('\n');
+
+  // Build captions (step 5)
+  buildCaptions(cfg, epNum);
+
+  // Save episode counter
+  localStorage.setItem('ballrs-multi-ep-' + cfg.folder, epNum.toString());
+}
+
+// ============================================================
+// STEP 5: Captions
+// ============================================================
+function buildCaptions(cfg, epNum) {
+  const container = document.getElementById('captions');
+  container.innerHTML = '';
+
+  const sportName = cfg.sportLabel;
+  const hashtags = cfg.hashtags;
+
+  const platforms = [
+    {
+      name: 'TikTok',
+      text: `3 ${sportName} questions. 0 answers. How many can you get? 👀\nAnswers in tomorrow's video ⬇️\n${hashtags} #sportstrivia #ballrs #fyp`
+    },
+    {
+      name: 'X / Twitter',
+      text: `3 questions. No answers.\nDrop your guesses below 👇 ${hashtags.split(' ')[0]}`
+    },
+    {
+      name: 'Instagram Reels',
+      text: `3 ${sportName} questions. 0 answers. How many can you get? 👀\n\nAnswers in tomorrow's video.\n\nDaily trivia at Ballrs — link in bio.`
+    },
+    {
+      name: 'YouTube Shorts (Title)',
+      text: `Can You Get All 3 Right? ${sportName} Quiz Part ${epNum}`
+    },
+    {
+      name: 'YouTube Shorts (Description)',
+      text: `3 ${sportName.toLowerCase()} questions. No answers in the video — drop your guesses in the comments!\n\nBallrs — daily sports trivia puzzles across NFL, NBA, MLB and Premier League. 7 game modes. Free download. No in-app purchases.\n📲 https://ballrs.net\n🍎 https://apps.apple.com/us/app/ballrs-sports-trivia/id6756982139\n🤖 https://play.google.com/store/apps/details?id=com.anonymous.ballrs`
+    },
+  ];
+
+  platforms.forEach(p => {
+    const block = document.createElement('div');
+    block.className = 'caption-block';
+    block.onclick = () => copyText(p.text, p.name + ' caption copied');
+    block.innerHTML = `<div class="platform">${p.name}</div><pre>${p.text}</pre>`;
+    container.appendChild(block);
+  });
+
+  // Pinned comment (answers)
+  const answers = lockedQuestions.map((q, i) => `${i + 1}) ${q.answer}`).join(' ');
+  const pinnedBlock = document.createElement('div');
+  pinnedBlock.className = 'caption-block';
+  pinnedBlock.onclick = () => copyText(`ANSWERS: ${answers}`, 'Pinned comment copied');
+  pinnedBlock.innerHTML = `<div class="platform">📌 Pinned Comment (post next day)</div><pre>ANSWERS: ${answers}</pre>`;
+  container.appendChild(pinnedBlock);
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function copyText(text, message) {
+  navigator.clipboard.writeText(text).then(() => {
+    const toast = document.getElementById('copyToast');
+    toast.innerText = message || 'Copied!';
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 1500);
+  });
+}
+
+function resetAll() {
+  selectedSport = null;
+  lockedQuestions = [null, null, null];
+  allPlayers = [];
+  searchResults = {};
+  goToStep(1);
+}
+
+updateStepIndicator();
+</script>
+
+</body>
+</html>

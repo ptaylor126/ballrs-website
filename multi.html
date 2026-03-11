@@ -977,7 +977,13 @@ async function googleSearchPlayer(playerIdx) {
 
 function acceptWikiImage(playerIdx) {
   const player = allPlayers[playerIdx];
+  if (!player.wikiImage) {
+    console.warn('acceptWikiImage called but no wikiImage for', player.name);
+    return;
+  }
   player.selectedImageUrl = player.wikiImage;
+
+  console.log(`Accepted image for ${player.name}. Selected: ${allPlayers.filter(p => p.selectedImageUrl).length}/${allPlayers.length}`);
 
   const rowEl = document.getElementById('player-row-' + playerIdx);
   rowEl.classList.add('done');
@@ -994,6 +1000,8 @@ function acceptWikiImage(playerIdx) {
 function selectImage(playerIdx, encodedUrl) {
   const url = decodeURIComponent(encodedUrl);
   allPlayers[playerIdx].selectedImageUrl = url;
+
+  console.log(`Selected Google image for ${allPlayers[playerIdx].name}. Selected: ${allPlayers.filter(p => p.selectedImageUrl).length}/${allPlayers.length}`);
 
   const rowEl = document.getElementById('player-row-' + playerIdx);
   rowEl.classList.add('done');
@@ -1033,6 +1041,10 @@ async function searchAllPlayers() {
     if (allPlayers[i].selectedImageUrl) continue; // skip already done
     status.textContent = `${i + 1} / ${allPlayers.length}...`;
     await searchPlayerImages(i);
+    // Auto-accept Wikipedia image if found
+    if (allPlayers[i].wikiImage && !allPlayers[i].selectedImageUrl) {
+      acceptWikiImage(i);
+    }
     if (i < allPlayers.length - 1) {
       await new Promise(r => setTimeout(r, 300));
     }
@@ -1040,8 +1052,9 @@ async function searchAllPlayers() {
 
   btn.disabled = false;
   btn.textContent = 'SEARCH ALL';
-  status.textContent = 'Done!';
-  setTimeout(() => { status.textContent = ''; }, 2000);
+  const selected = allPlayers.filter(p => p.selectedImageUrl).length;
+  status.textContent = `Done! ${selected}/${allPlayers.length} images found.`;
+  setTimeout(() => { status.textContent = ''; }, 3000);
 }
 
 function updateImageProgress() {
@@ -1049,11 +1062,16 @@ function updateImageProgress() {
   const total = allPlayers.length;
   const pct = total > 0 ? (selected / total * 100) : 0;
 
+  console.log(`Image progress: ${selected}/${total} (${pct.toFixed(0)}%)`);
+
   document.getElementById('imageProgress').style.width = pct + '%';
-  document.getElementById('imagesReadyBtn').disabled = selected < total;
+
+  const btn = document.getElementById('imagesReadyBtn');
+  btn.disabled = selected < total;
 
   // When all selected, build step 4
-  if (selected === total) {
+  if (selected === total && total > 0) {
+    console.log('All images selected, building step 4');
     buildRenderStep();
   }
 }

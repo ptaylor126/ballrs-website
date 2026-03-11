@@ -849,11 +849,10 @@ async function searchPlayerImages(playerIdx) {
   const gridEl = document.getElementById('image-grid-' + playerIdx);
   gridEl.innerHTML = '<div class="image-loading">Searching...</div>';
 
-  const sport = selectedSport === 'EPL' ? 'football soccer' : selectedSport;
-  const query = `${player.name} ${sport} player headshot portrait`;
+  const query = `${player.name} face`;
 
   try {
-    const url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CX}&q=${encodeURIComponent(query)}&searchType=image&num=5&imgSize=medium&safe=active`;
+    const url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CX}&q=${encodeURIComponent(query)}&searchType=image&num=10&imgSize=medium&safe=active`;
     const resp = await fetch(url);
     const data = await resp.json();
 

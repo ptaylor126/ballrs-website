@@ -1091,6 +1091,7 @@ function buildRenderStep() {
   ];
   allPlayers.forEach(p => {
     downloadLines.push(`curl -L -o "public/episodes/multi/${p.filename}" "${p.selectedImageUrl}"`);
+    downloadLines.push(`sips -s format png "public/episodes/multi/${p.filename}" --out "public/episodes/multi/${p.filename}" 2>/dev/null`);
   });
 
   document.getElementById('downloadCmd').innerText = downloadLines.join('\n');

@@ -1159,7 +1159,7 @@ function buildRenderStep() {
 
   // ElevenLabs voiceover generation script
   function escapeForJson(str) {
-    return str.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/'/g, "\\'");
+    return str.replace(/['']/g, '').replace(/\\/g, '\\\\').replace(/"/g, '\\"');
   }
 
   const voClips = [];

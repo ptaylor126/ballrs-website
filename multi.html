@@ -1090,9 +1090,19 @@ function buildRenderStep() {
     '',
   ];
 
+  function convertWikiUrl(url) {
+    if (url.includes('upload.wikimedia.org/wikipedia/commons/') && !url.includes('/thumb/')) {
+      const parts = url.split('/commons/');
+      const path = parts[1];
+      const filename = path.split('/').pop();
+      return parts[0] + '/commons/thumb/' + path + '/600px-' + filename;
+    }
+    return url;
+  }
+
   allPlayers.forEach(p => {
     const file = `public/episodes/multi/${p.filename}`;
-    const safeUrl = (p.selectedImageUrl || '').replace(/"/g, '\\"');
+    const safeUrl = convertWikiUrl(p.selectedImageUrl || '').replace(/"/g, '\\"');
     downloadLines.push(`curl -sL -o "${file}" "${safeUrl}"`);
     downloadLines.push(`sips -s format png "${file}" --out "${file}" 2>/dev/null`);
   });

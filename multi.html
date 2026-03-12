@@ -1158,8 +1158,24 @@ function buildRenderStep() {
   document.getElementById('renderCmd').innerText = renderLines.join('\n');
 
   // ElevenLabs voiceover generation script
-  function escapeForJson(str) {
-    return str.replace(/['']/g, '').replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+  function escapeForVo(str) {
+    const contractions = {
+      "doesn't": "does not", "don't": "do not", "won't": "will not",
+      "can't": "cannot", "didn't": "did not", "isn't": "is not",
+      "wasn't": "was not", "weren't": "were not", "hasn't": "has not",
+      "haven't": "have not", "couldn't": "could not", "wouldn't": "would not",
+      "shouldn't": "should not", "it's": "it is", "he's": "he is",
+      "she's": "she is", "that's": "that is", "there's": "there is",
+      "they're": "they are", "we're": "we are", "you're": "you are"
+    };
+    let result = str;
+    for (const [contraction, expanded] of Object.entries(contractions)) {
+      result = result.split(contraction).join(expanded);
+      result = result.split(contraction.replace("'", "\u2019")).join(expanded);
+    }
+    result = result.replace(/['']/g, '');
+    result = result.replace(/"/g, '\\"');
+    return result;
   }
 
   const voClips = [];
@@ -1202,7 +1218,7 @@ function buildRenderStep() {
   ];
 
   voClips.forEach(clip => {
-    const safeText = escapeForJson(clip.text);
+    const safeText = escapeForVo(clip.text);
     voScriptLines.push(`generate_voice "${safeText}" "${clip.file}"`);
   });
 

@@ -1090,9 +1090,31 @@ function buildRenderStep() {
     ''
   ];
   allPlayers.forEach(p => {
-    downloadLines.push(`curl -L -o "public/episodes/multi/${p.filename}" "${p.selectedImageUrl}"`);
+    let imgUrl = p.selectedImageUrl;
+    // Convert full-size Wikipedia commons URLs to 600px thumbnails
+    if (imgUrl.includes('upload.wikimedia.org/wikipedia/commons/') && !imgUrl.includes('/commons/thumb/')) {
+      const filename = imgUrl.split('/').pop();
+      imgUrl = imgUrl.replace('/commons/', '/commons/thumb/') + '/600px-' + filename;
+    }
+    downloadLines.push(`curl -L -o "public/episodes/multi/${p.filename}" "${imgUrl}"`);
     downloadLines.push(`sips -s format png "public/episodes/multi/${p.filename}" --out "public/episodes/multi/${p.filename}" 2>/dev/null`);
   });
+
+  // Validation block
+  downloadLines.push('');
+  downloadLines.push('echo ""');
+  downloadLines.push('echo "Verifying images..."');
+  downloadLines.push('for f in public/episodes/multi/q*.png; do');
+  downloadLines.push('  TYPE=$(file -b "$f")');
+  downloadLines.push('  SIZE=$(wc -c < "$f")');
+  downloadLines.push('  if echo "$TYPE" | grep -q "PNG image"; then');
+  downloadLines.push('    echo "  ✓ $f — OK"');
+  downloadLines.push('  elif [ "$SIZE" -lt 5000 ]; then');
+  downloadLines.push('    echo "  ✗ $f — FAILED (only ${SIZE} bytes, probably an error page). Re-download this image manually."');
+  downloadLines.push('  else');
+  downloadLines.push('    echo "  ⚠ $f — Not PNG ($TYPE). Run: sips -s format png \\"$f\\" --out \\"$f\\""');
+  downloadLines.push('  fi');
+  downloadLines.push('done');
 
   document.getElementById('downloadCmd').innerText = downloadLines.join('\n');
 

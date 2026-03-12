@@ -1145,7 +1145,9 @@ function buildRenderStep() {
         if (n === "Shaquille O'Neal") return "Shaq";
         if (n === "LeBron James") return "LeBron";
         return parts[parts.length - 1];
-      })
+      }),
+      answerText: q.answer,
+      answerFact: q.answerFact
     }))
   };
 

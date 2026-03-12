@@ -1160,7 +1160,7 @@ function buildRenderStep() {
   const pause = (n) => { for (let i = 0; i < n; i++) voLines.push('...'); };
 
   // Intro scene (2s) — speech ~3s, add 2 pause lines after
-  voLines.push(`How good is your ${cfg.sportLabel} knowledge? Three questions. Let's see how many you get right.`);
+  voLines.push(`How good is your ${cfg.sportLabel} knowledge?`);
   pause(2);
 
   lockedQuestions.forEach((q, i) => {

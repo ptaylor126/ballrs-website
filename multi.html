@@ -468,15 +468,17 @@
     <div class="card">
       <div class="card-title">Step 4 — Download Images & Render</div>
 
-      <p style="margin-bottom:8px;font-size:14px;font-weight:700;">1. Copy this download script and run in terminal:</p>
+      <p style="margin-bottom:8px;font-size:14px;font-weight:700;">1. Download images (paste in terminal):</p>
       <div class="render-cmd" id="downloadCmd" onclick="copyText(this.innerText, 'Download script copied')"></div>
 
-      <p style="margin-bottom:8px;font-size:14px;font-weight:700;">2. Copy this render command:</p>
+      <p style="margin-bottom:8px;margin-top:20px;font-size:14px;font-weight:700;">2. Generate voiceover (paste in terminal):</p>
+      <div class="render-cmd" id="voiceoverCmd" onclick="copyText(this.innerText, 'Voiceover script copied')"></div>
+
+      <p style="margin-bottom:8px;margin-top:20px;font-size:14px;font-weight:700;">3. Render video (paste in terminal):</p>
       <div class="render-cmd" id="renderCmd" onclick="copyText(this.innerText, 'Render command copied')"></div>
 
-      <p style="margin-bottom:8px;margin-top:20px;font-size:14px;font-weight:700;">3. Voiceover script (record after video looks right):</p>
-      <div class="voiceover-box" id="voiceoverText" onclick="copyText(this.innerText, 'Voiceover copied')"></div>
-      <p class="hint">Click to copy. Paste into ElevenLabs → save as public/audio/voiceover.mp3</p>
+      <p style="margin-bottom:8px;margin-top:20px;font-size:14px;font-weight:700;">4. Voiceover text preview (for reference only):</p>
+      <div class="voiceover-box" id="voiceoverText" onclick="copyText(this.innerText, 'Voiceover text copied')"></div>
 
       <div class="btn-row">
         <button class="btn btn-gray btn-sm" onclick="goToStep(3)">← BACK</button>
@@ -1154,6 +1156,61 @@ function buildRenderStep() {
   ];
 
   document.getElementById('renderCmd').innerText = renderLines.join('\n');
+
+  // ElevenLabs voiceover generation script
+  function escapeForJson(str) {
+    return str.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/'/g, "\\'");
+  }
+
+  const voClips = [];
+  // Clip 1: Intro
+  voClips.push({ text: `How good is your ${cfg.sportLabel} knowledge?`, file: 'public/audio/vo-1.mp3' });
+
+  lockedQuestions.forEach((q, i) => {
+    const num = ['one', 'two', 'three'][i] || (i + 1);
+    // Question clip
+    let qText;
+    if (q.type === 'never_played') {
+      qText = `Question ${num}. ${q.questionText}. ${q.subtitle}`;
+    } else {
+      qText = `Question ${num}. ${q.subtitle}`;
+    }
+    voClips.push({ text: qText, file: `public/audio/vo-${2 + i * 2}.mp3` });
+    // Answer clip
+    voClips.push({ text: `The answer... ${q.answer}. ${q.answerFact}`, file: `public/audio/vo-${3 + i * 2}.mp3` });
+  });
+
+  const voScriptLines = [
+    'cd /Users/paultaylor/Projects/remotion/sports-trivia-promo',
+    'mkdir -p public/audio',
+    '',
+    'generate_voice() {',
+    '  local TEXT="$1"',
+    '  local FILE="$2"',
+    '  curl -s --request POST \\',
+    '    --url "https://api.elevenlabs.io/v1/text-to-speech/Hd8mWkf5kvyBZB0S7yXU" \\',
+    '    --header "xi-api-key: $ELEVENLABS_API_KEY" \\',
+    '    --header "Content-Type: application/json" \\',
+    '    --data "{\\"text\\":\\"$TEXT\\",\\"model_id\\":\\"eleven_multilingual_v2\\",\\"voice_settings\\":{\\"stability\\":0.5,\\"similarity_boost\\":0.75}}" \\',
+    '    --output "$FILE"',
+    '  echo "  ✓ $FILE"',
+    '  sleep 1',
+    '}',
+    '',
+    'echo "Generating voiceover clips..."',
+    'echo ""',
+  ];
+
+  voClips.forEach(clip => {
+    const safeText = escapeForJson(clip.text);
+    voScriptLines.push(`generate_voice "${safeText}" "${clip.file}"`);
+  });
+
+  voScriptLines.push('');
+  voScriptLines.push('echo ""');
+  voScriptLines.push('echo "Done. 7 voiceover clips saved to public/audio/"');
+
+  document.getElementById('voiceoverCmd').innerText = voScriptLines.join('\n');
 
   // Voiceover (timed for ElevenLabs — each "..." ≈ 0.5s pause)
   const voLines = [];

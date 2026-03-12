@@ -1178,22 +1178,66 @@ function buildRenderStep() {
     return result;
   }
 
+  function trimToWords(str, max) {
+    const words = str.split(/\s+/);
+    if (words.length <= max) return str;
+    return words.slice(0, max).join(' ');
+  }
+
+  function buildAnswerText(answer, fact, maxWords) {
+    // Clean answer: replace & with "and"
+    let ans = answer.replace(/&/g, 'and');
+    // Remove parenthetical from answer for speech (keep club name short)
+    const cleanAns = ans.replace(/\s*\(.*?\)\s*/g, '').trim();
+    const parenthetical = (ans.match(/\((.*?)\)/) || [])[1] || '';
+
+    // Build fact: deduplicate player name references
+    let shortFact = fact;
+    // Get first word of answer to detect name repetition
+    const firstName = cleanAns.split(/[\s,]/)[0];
+    if (firstName && shortFact.startsWith(firstName)) {
+      shortFact = 'He' + shortFact.slice(firstName.length);
+    }
+    // Also handle "Lastname" repetition
+    const answerNames = cleanAns.split(/\s*and\s*/);
+    if (answerNames.length >= 2) {
+      // For multi-player answers, try "Both" or "They"
+      const firstPlayerFirst = answerNames[0].split(' ')[0];
+      if (shortFact.startsWith(firstPlayerFirst)) {
+        shortFact = 'They' + shortFact.slice(firstPlayerFirst.length);
+      }
+    }
+
+    // Build the line
+    let line;
+    if (parenthetical) {
+      line = `${cleanAns}. ${parenthetical}. ${shortFact}`;
+    } else {
+      line = `${cleanAns}. ${shortFact}`;
+    }
+
+    return trimToWords(line, maxWords);
+  }
+
   const voClips = [];
-  // Clip 1: Intro
-  voClips.push({ text: `How good is your ${cfg.sportLabel} knowledge?`, file: 'public/audio/vo-1.mp3' });
+  // Clip 1: Intro (max 8 words)
+  voClips.push({ text: trimToWords(`How good is your ${cfg.sportLabel} knowledge?`, 8), file: 'public/audio/vo-1.mp3' });
 
   lockedQuestions.forEach((q, i) => {
     const num = ['one', 'two', 'three'][i] || (i + 1);
-    // Question clip
+
+    // Question clip (max 15 words)
     let qText;
     if (q.type === 'never_played') {
       qText = `Question ${num}. ${q.questionText}. ${q.subtitle}`;
     } else {
       qText = `Question ${num}. ${q.subtitle}`;
     }
-    voClips.push({ text: qText, file: `public/audio/vo-${2 + i * 2}.mp3` });
-    // Answer clip
-    voClips.push({ text: `The answer... ${q.answer}. ${q.answerFact}`, file: `public/audio/vo-${3 + i * 2}.mp3` });
+    voClips.push({ text: trimToWords(qText, 15), file: `public/audio/vo-${2 + i * 2}.mp3` });
+
+    // Answer clip (max 18 words) — no "The answer is" prefix
+    const answerLine = buildAnswerText(q.answer, q.answerFact, 18);
+    voClips.push({ text: answerLine, file: `public/audio/vo-${3 + i * 2}.mp3` });
   });
 
   const voScriptLines = [
@@ -1228,32 +1272,13 @@ function buildRenderStep() {
 
   document.getElementById('voiceoverCmd').innerText = voScriptLines.join('\n');
 
-  // Voiceover (timed for ElevenLabs — each "..." ≈ 0.5s pause)
+  // Voiceover text preview (shows the actual clip text with word counts)
   const voLines = [];
-  const pause = (n) => { for (let i = 0; i < n; i++) voLines.push('...'); };
-
-  // Intro scene (2s) — speech ~3s, add 2 pause lines after
-  voLines.push(`How good is your ${cfg.sportLabel} knowledge?`);
-  pause(2);
-
-  lockedQuestions.forEach((q, i) => {
-    const num = ['one', 'two', 'three'][i] || (i + 1);
-
-    // Question scene (8s) — speech ~3s, fill remaining ~5s with 10 pause lines
-    if (q.type === 'never_played') {
-      voLines.push(`Question ${num}. ${q.questionText}. ${q.subtitle}`);
-    } else {
-      voLines.push(`Question ${num}. ${q.subtitle}`);
-    }
-    pause(10);
-
-    // Answer scene (7s) — speech ~4s, fill remaining ~3s with 6 pause lines
-    voLines.push(`The answer... ${q.answer}. ${q.answerFact}`);
-    pause(6);
+  voClips.forEach((clip, idx) => {
+    const wordCount = clip.text.split(/\s+/).length;
+    voLines.push(`[vo-${idx + 1}] (${wordCount} words) ${clip.text}`);
+    voLines.push('');
   });
-
-  // Score check scene (2s)
-  voLines.push('How many did you get? Drop your score in the comments.');
 
   document.getElementById('voiceoverText').innerText = voLines.join('\n');
 

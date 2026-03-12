@@ -1083,38 +1083,47 @@ function buildRenderStep() {
   const cfg = SPORT_CONFIG[selectedSport];
   const epNum = parseInt(localStorage.getItem('ballrs-multi-ep-' + cfg.folder) || '0') + 1;
 
-  // Download script (curl commands)
+  // Download script (Wikipedia API based)
   const downloadLines = [
-    `cd /Users/paultaylor/Projects/remotion/sports-trivia-promo`,
-    `mkdir -p public/episodes/multi`,
-    ''
+    'cd /Users/paultaylor/Projects/remotion/sports-trivia-promo',
+    'mkdir -p public/episodes/multi',
+    '',
+    'download_player() {',
+    '  local NAME="$1"',
+    '  local FILE="$2"',
+    '  local WIKI_NAME=$(echo "$NAME" | sed \'s/ /_/g\')',
+    '  ',
+    '  # Get image URL from Wikipedia API',
+    '  local URL=$(curl -s "https://en.wikipedia.org/api/rest_v1/page/summary/${WIKI_NAME}" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get(\'originalimage\',{}).get(\'source\',\'\'))" 2>/dev/null)',
+    '  ',
+    '  if [ -z "$URL" ]; then',
+    '    echo "  ✗ $NAME — No Wikipedia image found. Search manually."',
+    '    return 1',
+    '  fi',
+    '  ',
+    '  curl -sL -o "$FILE" "$URL"',
+    '  sips -s format png "$FILE" --out "$FILE" 2>/dev/null',
+    '  ',
+    '  local SIZE=$(wc -c < "$FILE")',
+    '  if [ "$SIZE" -lt 5000 ]; then',
+    '    echo "  ✗ $NAME — Download failed (${SIZE} bytes). Search manually."',
+    '    return 1',
+    '  else',
+    '    echo "  ✓ $NAME — OK"',
+    '  fi',
+    '}',
+    '',
+    'echo "Downloading player images..."',
+    'echo ""',
   ];
+
   allPlayers.forEach(p => {
-    let imgUrl = p.selectedImageUrl;
-    // Convert full-size Wikipedia commons URLs to 600px thumbnails
-    if (imgUrl.includes('upload.wikimedia.org/wikipedia/commons/') && !imgUrl.includes('/commons/thumb/')) {
-      const filename = imgUrl.split('/').pop();
-      imgUrl = imgUrl.replace('/commons/', '/commons/thumb/') + '/600px-' + filename;
-    }
-    downloadLines.push(`curl -L -o "public/episodes/multi/${p.filename}" "${imgUrl}"`);
-    downloadLines.push(`sips -s format png "public/episodes/multi/${p.filename}" --out "public/episodes/multi/${p.filename}" 2>/dev/null`);
+    downloadLines.push(`download_player "${p.name}" "public/episodes/multi/${p.filename}"`);
   });
 
-  // Validation block
   downloadLines.push('');
   downloadLines.push('echo ""');
-  downloadLines.push('echo "Verifying images..."');
-  downloadLines.push('for f in public/episodes/multi/q*.png; do');
-  downloadLines.push('  TYPE=$(file -b "$f")');
-  downloadLines.push('  SIZE=$(wc -c < "$f")');
-  downloadLines.push('  if echo "$TYPE" | grep -q "PNG image"; then');
-  downloadLines.push('    echo "  ✓ $f — OK"');
-  downloadLines.push('  elif [ "$SIZE" -lt 5000 ]; then');
-  downloadLines.push('    echo "  ✗ $f — FAILED (only ${SIZE} bytes, probably an error page). Re-download this image manually."');
-  downloadLines.push('  else');
-  downloadLines.push('    echo "  ⚠ $f — Not PNG ($TYPE). Run: sips -s format png \\"$f\\" --out \\"$f\\""');
-  downloadLines.push('  fi');
-  downloadLines.push('done');
+  downloadLines.push('echo "Done. Check for any ✗ marks above."');
 
   document.getElementById('downloadCmd').innerText = downloadLines.join('\n');
 

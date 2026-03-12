@@ -1155,22 +1155,31 @@ function buildRenderStep() {
 
   document.getElementById('renderCmd').innerText = renderLines.join('\n');
 
-  // Voiceover
-  const voLines = [
-    `How good is your ${cfg.sportLabel} knowledge? Three questions. Let's see how many you get right.`,
-    '',
-  ];
+  // Voiceover (timed for ElevenLabs — each "..." ≈ 0.5s pause)
+  const voLines = [];
+  const pause = (n) => { for (let i = 0; i < n; i++) voLines.push('...'); };
+
+  // Intro scene (2s) — speech ~3s, add 2 pause lines after
+  voLines.push(`How good is your ${cfg.sportLabel} knowledge? Three questions. Let's see how many you get right.`);
+  pause(2);
+
   lockedQuestions.forEach((q, i) => {
     const num = ['one', 'two', 'three'][i] || (i + 1);
+
+    // Question scene (8s) — speech ~3s, fill remaining ~5s with 10 pause lines
     if (q.type === 'never_played') {
       voLines.push(`Question ${num}. ${q.questionText}. ${q.subtitle}`);
     } else {
       voLines.push(`Question ${num}. ${q.subtitle}`);
     }
-    voLines.push('');
+    pause(10);
+
+    // Answer scene (7s) — speech ~4s, fill remaining ~3s with 6 pause lines
     voLines.push(`The answer... ${q.answer}. ${q.answerFact}`);
-    voLines.push('');
+    pause(6);
   });
+
+  // Score check scene (2s)
   voLines.push('How many did you get? Drop your score in the comments.');
 
   document.getElementById('voiceoverText').innerText = voLines.join('\n');

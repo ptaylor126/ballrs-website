@@ -1134,9 +1134,16 @@ function buildRenderStep() {
   ];
 
   allPlayers.forEach(p => {
-    // Escape single quotes and backslashes for safe shell interpolation
-    const safeName = p.name.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/`/g, '\\`');
-    downloadLines.push(`download_player "${safeName}" "public/episodes/multi/${p.filename}"`);
+    const file = `public/episodes/multi/${p.filename}`;
+    if (p.selectedImageUrl) {
+      const safeUrl = p.selectedImageUrl.replace(/"/g, '\\"');
+      downloadLines.push(`curl -sL -o "${file}" "${safeUrl}"`);
+      downloadLines.push(`sips -s format png "${file}" --out "${file}" 2>/dev/null`);
+      downloadLines.push(`echo "  ✓ ${p.name.replace(/"/g, '\\"')} — OK"`);
+    } else {
+      const safeName = p.name.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/`/g, '\\`');
+      downloadLines.push(`download_player "${safeName}" "${file}"`);
+    }
   });
 
   downloadLines.push('');

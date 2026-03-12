@@ -1132,19 +1132,18 @@ function buildRenderStep() {
 
   // Voiceover
   const voLines = [
-    'Three questions. Three answers. Let\'s go.',
+    `How good is your ${cfg.sportLabel} knowledge? Three questions. Let's see how many you get right.`,
     '',
   ];
   lockedQuestions.forEach((q, i) => {
+    const num = ['one', 'two', 'three'][i] || (i + 1);
     if (q.type === 'never_played') {
-      voLines.push(`Question ${i + 1}. ${q.questionText}. ${q.subtitle}`);
-    } else if (q.type === 'same_club') {
-      voLines.push(`Question ${i + 1}. ${q.subtitle}`);
+      voLines.push(`Question ${num}. ${q.questionText}. ${q.subtitle}`);
     } else {
-      voLines.push(`Question ${i + 1}. Odd one out. ${q.subtitle}`);
+      voLines.push(`Question ${num}. ${q.subtitle}`);
     }
     voLines.push('');
-    voLines.push(`The answer is ${q.answer}. ${q.answerFact}`);
+    voLines.push(`The answer... ${q.answer}. ${q.answerFact}`);
     voLines.push('');
   });
   voLines.push('How many did you get? Drop your score in the comments.');

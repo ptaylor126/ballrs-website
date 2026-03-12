@@ -1132,7 +1132,7 @@ function buildRenderStep() {
 
   // Voiceover
   const voLines = [
-    'Three questions. No answers. Drop your guesses in the comments.',
+    'Three questions. Three answers. Let\'s go.',
     '',
   ];
   lockedQuestions.forEach((q, i) => {
@@ -1144,8 +1144,10 @@ function buildRenderStep() {
       voLines.push(`Question ${i + 1}. Odd one out. ${q.subtitle}`);
     }
     voLines.push('');
+    voLines.push(`The answer is ${q.answer}. ${q.answerFact}`);
+    voLines.push('');
   });
-  voLines.push('How did you do? Answers in tomorrow\'s video.');
+  voLines.push('How many did you get? Drop your score in the comments.');
 
   document.getElementById('voiceoverText').innerText = voLines.join('\n');
 
@@ -1169,15 +1171,15 @@ function buildCaptions(cfg, epNum) {
   const platforms = [
     {
       name: 'TikTok',
-      text: `3 ${sportName} questions. 0 answers. How many can you get? 👀\nAnswers in tomorrow's video ⬇️\n${hashtags} #sportstrivia #ballrs #fyp`
+      text: `3 ${sportName} questions. 3 answers. How many can you get? 👀\n${hashtags} #sportstrivia #ballrs #fyp`
     },
     {
       name: 'X / Twitter',
-      text: `3 questions. No answers.\nDrop your guesses below 👇 ${hashtags.split(' ')[0]}`
+      text: `3 questions. 3 answers. How many can you get? 👇 ${hashtags.split(' ')[0]}`
     },
     {
       name: 'Instagram Reels',
-      text: `3 ${sportName} questions. 0 answers. How many can you get? 👀\n\nAnswers in tomorrow's video.\n\nDaily trivia at Ballrs — link in bio.`
+      text: `3 ${sportName} questions. 3 answers. How many can you get? 👀\n\nDaily trivia at Ballrs — link in bio.`
     },
     {
       name: 'YouTube Shorts (Title)',
@@ -1185,7 +1187,7 @@ function buildCaptions(cfg, epNum) {
     },
     {
       name: 'YouTube Shorts (Description)',
-      text: `3 ${sportName.toLowerCase()} questions. No answers in the video — drop your guesses in the comments!\n\nBallrs — daily sports trivia puzzles across NFL, NBA, MLB and Premier League. 7 game modes. Free download. No in-app purchases.\n📲 https://ballrs.net\n🍎 https://apps.apple.com/us/app/ballrs-sports-trivia/id6756982139\n🤖 https://play.google.com/store/apps/details?id=com.anonymous.ballrs`
+      text: `3 ${sportName.toLowerCase()} questions. 3 answers. How many can you get?\n\nBallrs — daily sports trivia puzzles across NFL, NBA, MLB and Premier League. 7 game modes. Free download. No in-app purchases.\n📲 https://ballrs.net\n🍎 https://apps.apple.com/us/app/ballrs-sports-trivia/id6756982139\n🤖 https://play.google.com/store/apps/details?id=com.anonymous.ballrs`
     },
   ];
 
@@ -1202,7 +1204,7 @@ function buildCaptions(cfg, epNum) {
   const pinnedBlock = document.createElement('div');
   pinnedBlock.className = 'caption-block';
   pinnedBlock.onclick = () => copyText(`ANSWERS: ${answers}`, 'Pinned comment copied');
-  pinnedBlock.innerHTML = `<div class="platform">📌 Pinned Comment (post next day)</div><pre>ANSWERS: ${answers}</pre>`;
+  pinnedBlock.innerHTML = `<div class="platform">📌 Pinned Comment</div><pre>ANSWERS: ${answers}</pre>`;
   container.appendChild(pinnedBlock);
 }
 

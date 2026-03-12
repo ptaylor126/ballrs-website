@@ -1083,72 +1083,31 @@ function buildRenderStep() {
   const cfg = SPORT_CONFIG[selectedSport];
   const epNum = parseInt(localStorage.getItem('ballrs-multi-ep-' + cfg.folder) || '0') + 1;
 
-  // Download script (Wikipedia API based)
+  // Download script (direct URLs from dashboard selection)
   const downloadLines = [
     'cd /Users/paultaylor/Projects/remotion/sports-trivia-promo',
     'mkdir -p public/episodes/multi',
     '',
-    'wiki_image() {',
-    '  local SLUG=$(python3 -c "import sys,urllib.parse; print(urllib.parse.quote(sys.argv[1].replace(\' \', \'_\')))" "$1")',
-    '  curl -s "https://en.wikipedia.org/api/rest_v1/page/summary/${SLUG}" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get(\'originalimage\',{}).get(\'source\',\'\'))" 2>/dev/null',
-    '}',
-    '',
-    'download_player() {',
-    '  local NAME="$1"',
-    '  local FILE="$2"',
-    '  ',
-    '  local URL=$(wiki_image "$NAME")',
-    '  ',
-    '  if [ -z "$URL" ]; then',
-    '    URL=$(wiki_image "${NAME}_(footballer)")',
-    '  fi',
-    '  ',
-    '  if [ -z "$URL" ]; then',
-    '    URL=$(wiki_image "${NAME}_(soccer)")',
-    '  fi',
-    '  ',
-    '  if [ -z "$URL" ]; then',
-    '    local GQUERY=$(python3 -c "import sys,urllib.parse; print(urllib.parse.quote(sys.argv[1] + \' face\'))" "$NAME")',
-    '    URL=$(curl -s "https://www.googleapis.com/customsearch/v1?key=AIzaSyC54u7UnfcJDN3Huy_Sc0s4HTm9v9dHJ1A&cx=33149c5ef26554a4e&q=${GQUERY}&searchType=image&num=1&imgSize=medium&safe=active" | python3 -c "import sys,json; d=json.load(sys.stdin); items=d.get(\'items\',[]); print(items[0][\'link\'] if items else \'\')" 2>/dev/null)',
-    '  fi',
-    '  ',
-    '  if [ -z "$URL" ]; then',
-    '    echo "  ✗ $NAME — No image found. Search manually."',
-    '    return 1',
-    '  fi',
-    '  ',
-    '  curl -sL -o "$FILE" "$URL"',
-    '  sips -s format png "$FILE" --out "$FILE" 2>/dev/null',
-    '  ',
-    '  local SIZE=$(wc -c < "$FILE")',
-    '  if [ "$SIZE" -lt 5000 ]; then',
-    '    echo "  ✗ $NAME — Download failed (${SIZE} bytes). Search manually."',
-    '    return 1',
-    '  else',
-    '    echo "  ✓ $NAME — OK"',
-    '  fi',
-    '}',
-    '',
-    'echo "Downloading player images..."',
-    'echo ""',
   ];
 
   allPlayers.forEach(p => {
     const file = `public/episodes/multi/${p.filename}`;
-    if (p.selectedImageUrl) {
-      const safeUrl = p.selectedImageUrl.replace(/"/g, '\\"');
-      downloadLines.push(`curl -sL -o "${file}" "${safeUrl}"`);
-      downloadLines.push(`sips -s format png "${file}" --out "${file}" 2>/dev/null`);
-      downloadLines.push(`echo "  ✓ ${p.name.replace(/"/g, '\\"')} — OK"`);
-    } else {
-      const safeName = p.name.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/`/g, '\\`');
-      downloadLines.push(`download_player "${safeName}" "${file}"`);
-    }
+    const safeUrl = (p.selectedImageUrl || '').replace(/"/g, '\\"');
+    downloadLines.push(`curl -sL -o "${file}" "${safeUrl}"`);
+    downloadLines.push(`sips -s format png "${file}" --out "${file}" 2>/dev/null`);
   });
 
   downloadLines.push('');
   downloadLines.push('echo ""');
-  downloadLines.push('echo "Done. Check for any ✗ marks above."');
+  downloadLines.push('echo "Verifying images..."');
+  downloadLines.push('for f in public/episodes/multi/q*.png; do');
+  downloadLines.push('  SIZE=$(wc -c < "$f")');
+  downloadLines.push('  if [ "$SIZE" -lt 5000 ]; then');
+  downloadLines.push('    echo "  ✗ $f — FAILED"');
+  downloadLines.push('  else');
+  downloadLines.push('    echo "  ✓ $f — OK"');
+  downloadLines.push('  fi');
+  downloadLines.push('done');
 
   document.getElementById('downloadCmd').innerText = downloadLines.join('\n');
 

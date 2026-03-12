@@ -1103,8 +1103,9 @@ function buildRenderStep() {
   allPlayers.forEach(p => {
     const file = `public/episodes/multi/${p.filename}`;
     const safeUrl = convertWikiUrl(p.selectedImageUrl || '').replace(/"/g, '\\"');
-    downloadLines.push(`curl -sL -o "${file}" "${safeUrl}"`);
+    downloadLines.push(`curl -sL -H "User-Agent: Mozilla/5.0 (Macintosh)" -o "${file}" "${safeUrl}"`);
     downloadLines.push(`sips -s format png "${file}" --out "${file}" 2>/dev/null`);
+    downloadLines.push('sleep 1');
   });
 
   downloadLines.push('');

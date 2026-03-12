@@ -1091,7 +1091,7 @@ function buildRenderStep() {
     'download_player() {',
     '  local NAME="$1"',
     '  local FILE="$2"',
-    '  local WIKI_NAME=$(echo "$NAME" | sed \'s/ /_/g\')',
+    '  local WIKI_NAME=$(python3 -c "import urllib.parse; print(urllib.parse.quote(\'$NAME\'.replace(\' \', \'_\')))")',
     '  ',
     '  # Get image URL from Wikipedia API',
     '  local URL=$(curl -s "https://en.wikipedia.org/api/rest_v1/page/summary/${WIKI_NAME}" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get(\'originalimage\',{}).get(\'source\',\'\'))" 2>/dev/null)',

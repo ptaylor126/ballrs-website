@@ -1189,6 +1189,23 @@ function buildRenderStep() {
     return words.slice(0, max).join(' ');
   }
 
+  function shortenTeams(str) {
+    const teams = {
+      'LOS ANGELES LAKERS': 'LA Lakers', 'LOS ANGELES CLIPPERS': 'LA Clippers',
+      'GOLDEN STATE WARRIORS': 'Golden State', 'MANCHESTER UNITED': 'Man United',
+      'MANCHESTER CITY': 'Man City', 'TOTTENHAM HOTSPUR': 'Spurs',
+      'WOLVERHAMPTON WANDERERS': 'Wolves', 'NOTTINGHAM FOREST': 'Forest',
+      'SAN ANTONIO SPURS': 'San Antonio', 'OKLAHOMA CITY THUNDER': 'OKC Thunder',
+      'PHILADELPHIA 76ERS': 'Philly Sixers', 'NEW ENGLAND PATRIOTS': 'New England',
+      'SAN FRANCISCO 49ERS': 'San Francisco', 'TAMPA BAY BUCCANEERS': 'Tampa Bay'
+    };
+    let result = str;
+    for (const [full, short] of Object.entries(teams)) {
+      result = result.replace(new RegExp(full, 'gi'), short);
+    }
+    return result;
+  }
+
   const voClips = [];
   // Clip 1: Intro (max 8 words)
   voClips.push({ text: trimToWords(`How good is your ${cfg.sportLabel} knowledge?`, 8), file: 'public/audio/vo-1.mp3' });
@@ -1203,7 +1220,7 @@ function buildRenderStep() {
     } else {
       qText = `Question ${num}. ${q.subtitle}`;
     }
-    voClips.push({ text: trimToWords(qText, 15), file: `public/audio/vo-${2 + i * 2}.mp3` });
+    voClips.push({ text: trimToWords(shortenTeams(qText), 15), file: `public/audio/vo-${2 + i * 2}.mp3` });
 
     // Answer clip (max 6 words) — just the name(s)
     let ansName = q.answer.replace(/&/g, 'and').replace(/\s*\(.*?\)/g, '').replace(/\s*—.*/, '').trim();

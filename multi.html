@@ -1184,41 +1184,6 @@ function buildRenderStep() {
     return words.slice(0, max).join(' ');
   }
 
-  function buildAnswerText(answer, fact, maxWords) {
-    // Clean answer: replace & with "and"
-    let ans = answer.replace(/&/g, 'and');
-    // Remove parenthetical from answer for speech (keep club name short)
-    const cleanAns = ans.replace(/\s*\(.*?\)\s*/g, '').trim();
-    const parenthetical = (ans.match(/\((.*?)\)/) || [])[1] || '';
-
-    // Build fact: deduplicate player name references
-    let shortFact = fact;
-    // Get first word of answer to detect name repetition
-    const firstName = cleanAns.split(/[\s,]/)[0];
-    if (firstName && shortFact.startsWith(firstName)) {
-      shortFact = 'He' + shortFact.slice(firstName.length);
-    }
-    // Also handle "Lastname" repetition
-    const answerNames = cleanAns.split(/\s*and\s*/);
-    if (answerNames.length >= 2) {
-      // For multi-player answers, try "Both" or "They"
-      const firstPlayerFirst = answerNames[0].split(' ')[0];
-      if (shortFact.startsWith(firstPlayerFirst)) {
-        shortFact = 'They' + shortFact.slice(firstPlayerFirst.length);
-      }
-    }
-
-    // Build the line
-    let line;
-    if (parenthetical) {
-      line = `${cleanAns}. ${parenthetical}. ${shortFact}`;
-    } else {
-      line = `${cleanAns}. ${shortFact}`;
-    }
-
-    return trimToWords(line, maxWords);
-  }
-
   const voClips = [];
   // Clip 1: Intro (max 8 words)
   voClips.push({ text: trimToWords(`How good is your ${cfg.sportLabel} knowledge?`, 8), file: 'public/audio/vo-1.mp3' });
@@ -1235,9 +1200,10 @@ function buildRenderStep() {
     }
     voClips.push({ text: trimToWords(qText, 15), file: `public/audio/vo-${2 + i * 2}.mp3` });
 
-    // Answer clip (max 18 words) — no "The answer is" prefix
-    const answerLine = buildAnswerText(q.answer, q.answerFact, 18);
-    voClips.push({ text: answerLine, file: `public/audio/vo-${3 + i * 2}.mp3` });
+    // Answer clip (max 6 words) — just the name(s)
+    let ansName = q.answer.replace(/&/g, 'and').replace(/\s*\(.*?\)/g, '').replace(/\s*—.*/, '').trim();
+    ansName = trimToWords(ansName, 6);
+    voClips.push({ text: ansName, file: `public/audio/vo-${3 + i * 2}.mp3` });
   });
 
   const voScriptLines = [

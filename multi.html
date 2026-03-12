@@ -432,6 +432,10 @@
   <div class="step" id="step2">
     <div class="card">
       <div class="card-title">Step 2 — Pick 3 Questions</div>
+      <div style="margin-bottom:16px;display:flex;align-items:center;gap:12px;">
+        <label for="episodeNum" style="font-family:'DM Sans',sans-serif;font-weight:900;font-size:18px;">Episode #</label>
+        <input type="number" id="episodeNum" value="1" min="1" style="font-family:'DM Sans',sans-serif;font-weight:900;font-size:24px;width:80px;padding:8px;border:2px solid #1A1A1A;border-radius:8px;background:#fff;text-align:center;" />
+      </div>
       <p style="margin-bottom:16px;font-size:14px;color:#6B7280;">Lock in 3 questions. Shuffle any you don't like.</p>
       <div id="questionSlots"></div>
       <div class="btn-row">
@@ -1074,7 +1078,7 @@ function updateImageProgress() {
 // ============================================================
 function buildRenderStep() {
   const cfg = SPORT_CONFIG[selectedSport];
-  const epNum = parseInt(localStorage.getItem('ballrs-multi-ep-' + cfg.folder) || '0') + 1;
+  const epNum = parseInt(document.getElementById('episodeNum').value) || 1;
 
   // Download script (direct URLs from dashboard selection)
   const downloadLines = [
@@ -1173,9 +1177,6 @@ function buildRenderStep() {
 
   // Build captions (step 5)
   buildCaptions(cfg, epNum);
-
-  // Save episode counter
-  localStorage.setItem('ballrs-multi-ep-' + cfg.folder, epNum.toString());
 }
 
 // ============================================================

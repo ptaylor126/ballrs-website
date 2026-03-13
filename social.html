@@ -385,6 +385,19 @@
       </a>
       <div class="btn-row">
         <button class="btn btn-yellow" onclick="goToStep(2)">← BACK</button>
+        <button class="btn btn-teal" onclick="goToStep('3b')">GENERATE AUDIO →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3b: Generate Voiceover Audio -->
+  <div class="step" id="step3b">
+    <div class="card">
+      <div class="card-title">Step 3b — Generate Voiceover Audio</div>
+      <p style="margin-bottom:16px;">Copy and paste this script in terminal to generate voiceover clips via ElevenLabs:</p>
+      <div class="render-cmd" id="voiceoverCmd" onclick="copyText(this.innerText, 'Voiceover script copied')"></div>
+      <div class="btn-row">
+        <button class="btn btn-yellow" onclick="goToStep(3)">← BACK</button>
         <button class="btn btn-teal" onclick="goToStep(4)">DONE →</button>
       </div>
     </div>
@@ -561,8 +574,80 @@ function renderQuestion() {
   badge.innerText = q.verified ? '✓ Verified' : '⚠ Verify before posting';
   document.getElementById('sourceText').innerText = q.source || '';
   
-  // Voiceover
+  // Voiceover text preview
   document.getElementById('voiceoverText').innerText = q.question;
+
+  // Voiceover generation script
+  function shortenTeams(str) {
+    return str
+      .replace(/los angeles lakers/gi, 'LA Lakers')
+      .replace(/los angeles clippers/gi, 'LA Clippers')
+      .replace(/golden state warriors/gi, 'Golden State')
+      .replace(/manchester united/gi, 'Man United')
+      .replace(/manchester city/gi, 'Man City')
+      .replace(/tottenham hotspur/gi, 'Spurs')
+      .replace(/wolverhampton wanderers/gi, 'Wolves')
+      .replace(/nottingham forest/gi, 'Forest')
+      .replace(/san antonio spurs/gi, 'San Antonio')
+      .replace(/oklahoma city thunder/gi, 'OKC Thunder')
+      .replace(/philadelphia 76ers/gi, 'Philly Sixers')
+      .replace(/new england patriots/gi, 'Patriots')
+      .replace(/san francisco 49ers/gi, 'San Francisco')
+      .replace(/tampa bay buccaneers/gi, 'Tampa Bay');
+  }
+
+  function cleanForVo(str) {
+    const contractions = {
+      "doesn't": "does not", "don't": "do not", "won't": "will not",
+      "can't": "cannot", "didn't": "did not", "isn't": "is not",
+      "wasn't": "was not", "weren't": "were not", "hasn't": "has not",
+      "haven't": "have not", "couldn't": "could not", "wouldn't": "would not",
+      "shouldn't": "should not", "it's": "it is", "he's": "he is",
+      "she's": "she is", "that's": "that is", "there's": "there is",
+      "they're": "they are", "we're": "we are", "you're": "you are"
+    };
+    let result = str;
+    for (const [c, e] of Object.entries(contractions)) {
+      result = result.split(c).join(e);
+      result = result.split(c.replace("'", "\u2019")).join(e);
+    }
+    result = result.replace(/['']/g, '');
+    result = result.replace(/"/g, '\\"');
+    return shortenTeams(result);
+  }
+
+  const voQuestionText = cleanForVo(q.question);
+  const voAnswerText = cleanForVo(q['option' + q.correctAnswer]);
+
+  const voScript = [
+    'cd /Users/paultaylor/Projects/remotion/sports-trivia-promo',
+    'mkdir -p public/audio',
+    'rm -f public/audio/vo-question.mp3 public/audio/vo-answer.mp3',
+    '',
+    'generate_voice() {',
+    '  local TEXT="$1"',
+    '  local FILE="$2"',
+    '  curl -s --request POST \\',
+    '    --url "https://api.elevenlabs.io/v1/text-to-speech/Hd8mWkf5kvyBZB0S7yXU?output_format=mp3_44100_128" \\',
+    '    --header "xi-api-key: $ELEVENLABS_API_KEY" \\',
+    '    --header "Content-Type: application/json" \\',
+    '    --header "Accept: audio/mpeg" \\',
+    '    --data "{\\"text\\":\\"$TEXT\\",\\"model_id\\":\\"eleven_multilingual_v2\\",\\"voice_settings\\":{\\"stability\\":0.5,\\"similarity_boost\\":0.75}}" \\',
+    '    --output "$FILE"',
+    '  echo "  ✓ $FILE"',
+    '  sleep 1',
+    '}',
+    '',
+    'echo "Generating voiceover clips..."',
+    'echo ""',
+    `generate_voice "${voQuestionText}" "public/audio/vo-question.mp3"`,
+    `generate_voice "${voAnswerText}" "public/audio/vo-answer.mp3"`,
+    '',
+    'echo ""',
+    'echo "Done. 2 voiceover clips saved to public/audio/"',
+  ];
+
+  document.getElementById('voiceoverCmd').innerText = voScript.join('\n');
   
   // Images
   const checklist = document.getElementById('imageChecklist');

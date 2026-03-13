@@ -327,6 +327,58 @@
       color: #6B7280;
       margin-top: 8px;
     }
+
+    /* Image search */
+    .player-row {
+      background: #F5F2EB;
+      border: 2px solid #1A1A1A;
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+    }
+    .player-row.done { border-color: #1ABC9C; background: #d4f5e9; }
+    .player-row-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .player-name { font-weight: 900; font-size: 16px; }
+    .player-label { font-size: 12px; color: #6B7280; margin-left: 8px; }
+    .btn-sm {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 700;
+      font-size: 12px;
+      padding: 6px 14px;
+      border: 2px solid #1A1A1A;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #fff;
+      background: #1ABC9C;
+    }
+    .btn-sm.yellow { background: #F2C94C; color: #1A1A1A; }
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      padding: 8px 0;
+    }
+    .image-option {
+      border: 2px solid #E8E8E8;
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      aspect-ratio: 1;
+    }
+    .image-option:hover { border-color: #1ABC9C; }
+    .image-option.selected { border-color: #1ABC9C; border-width: 3px; }
+    .image-option img { width: 100%; height: 100%; object-fit: cover; }
+    .image-loading { padding: 8px 0; color: #6B7280; font-size: 13px; }
+    .image-progress-bar {
+      height: 6px; background: #E8E8E8; border-radius: 3px; margin-bottom: 16px; overflow: hidden;
+    }
+    .image-progress-bar-fill {
+      height: 100%; background: #1ABC9C; border-radius: 3px; width: 0%; transition: width 0.3s;
+    }
   </style>
 </head>
 <body>
@@ -406,15 +458,18 @@
   <!-- STEP 4: Images -->
   <div class="step" id="step4">
     <div class="card">
-      <div class="card-title">Step 4 — Get Player Images</div>
-      <p style="margin-bottom:16px;">Find an image of each player and save as <strong>A.png, B.png, C.png, D.png</strong> in your Remotion project's <strong>public/quiz-images/</strong> folder</p>
-      <div class="image-checklist" id="imageChecklist"></div>
-      <p style="margin-top:16px;margin-bottom:8px;font-weight:700;">Then copy and run this:</p>
-      <div class="render-cmd" onclick="copyText(this.innerText, 'Process command copied')">cd /Users/paultaylor/Projects/remotion/sports-trivia-promo && python3 process-quiz-images.py ./public/quiz-images/ ./public/episodes/</div>
-      <p class="hint">Save images as A.png, B.png, C.png, D.png in public/quiz-images/ then run the command above.</p>
+      <div class="card-title">Step 4 — Find Player Images</div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <button class="btn-sm" id="searchAllBtn" onclick="searchAllOptions()">SEARCH ALL</button>
+        <span id="searchAllStatus" style="font-size:13px;color:#6B7280;"></span>
+      </div>
+      <div class="image-progress-bar"><div class="image-progress-bar-fill" id="imageProgress"></div></div>
+      <div id="optionRows"></div>
+      <p style="margin-top:16px;margin-bottom:8px;font-weight:700;">Download script:</p>
+      <div class="render-cmd" id="downloadCmd" onclick="copyText(this.innerText, 'Download script copied')">Select all images first...</div>
       <div class="btn-row" style="margin-top:20px;">
-        <button class="btn btn-yellow" onclick="goToStep(3)">← BACK</button>
-        <button class="btn btn-teal" onclick="goToStep(5)">DONE →</button>
+        <button class="btn btn-yellow" onclick="goToStep('3b')">← BACK</button>
+        <button class="btn btn-teal" id="imagesReadyBtn" disabled onclick="goToStep(5)">ALL IMAGES SELECTED →</button>
       </div>
     </div>
   </div>
@@ -649,22 +704,16 @@ function renderQuestion() {
 
   document.getElementById('voiceoverCmd').innerText = voScript.join('\n');
   
-  // Images
-  const checklist = document.getElementById('imageChecklist');
-  checklist.innerHTML = '';
-  ['A','B','C','D'].forEach(letter => {
-    const item = document.createElement('div');
-    item.className = 'image-item';
-    const letterEl = document.createElement('div');
-    letterEl.className = 'option-letter';
-    letterEl.style.background = cfg.color;
-    letterEl.innerText = letter;
-    const nameEl = document.createElement('span');
-    nameEl.innerText = q['option' + letter] + ' → save as ' + letter + '.png in public/quiz-images/';
-    item.appendChild(letterEl);
-    item.appendChild(nameEl);
-    checklist.appendChild(item);
-  });
+  // Images — build option data for image search
+  optionPlayers = ['A','B','C','D'].map(letter => ({
+    letter: letter,
+    name: q['option' + letter],
+    filename: `option${letter}-image.png`,
+    wikiImage: null,
+    images: null,
+    selectedImageUrl: null,
+  }));
+  renderOptionRows();
   
   // Render command
   const epNum = (episodeCounters[cfg.folder] || 0) + 1;
@@ -685,6 +734,266 @@ function renderQuestion() {
   document.getElementById('renderCmd').innerText = cmd;
   
   document.getElementById('pinnedText').innerText = '';
+}
+
+// ============================================================
+// IMAGE SEARCH
+// ============================================================
+const GOOGLE_API_KEY = 'AIzaSyC54u7UnfcJDN3Huy_Sc0s4HTm9v9dHJ1A';
+const GOOGLE_CX = '33149c5ef26554a4e';
+let optionPlayers = [];
+
+function renderOptionRows() {
+  const container = document.getElementById('optionRows');
+  container.innerHTML = '';
+  optionPlayers.forEach((opt, i) => {
+    const row = document.createElement('div');
+    row.className = 'player-row' + (opt.selectedImageUrl ? ' done' : '');
+    row.id = 'option-row-' + i;
+    row.innerHTML = `
+      <div class="player-row-header">
+        <div>
+          <span class="player-name">${opt.name}</span>
+          <span class="player-label">${opt.letter} · ${opt.filename}</span>
+        </div>
+        <div id="option-actions-${i}">
+          ${renderOptionActions(i)}
+        </div>
+      </div>
+      <div id="option-image-area-${i}">
+        ${renderOptionImageArea(i)}
+      </div>
+    `;
+    container.appendChild(row);
+  });
+  updateImageProgress();
+}
+
+function renderOptionActions(idx) {
+  const opt = optionPlayers[idx];
+  if (opt.selectedImageUrl) {
+    return `<button class="btn-sm yellow" onclick="changeOptionImage(${idx})">CHANGE</button>`;
+  }
+  if (opt.wikiImage) {
+    return `
+      <button class="btn-sm" onclick="acceptOptionWiki(${idx})">ACCEPT ✓</button>
+      <button class="btn-sm yellow" style="margin-left:4px;" onclick="googleSearchOption(${idx})">TRY GOOGLE</button>
+    `;
+  }
+  return `<button class="btn-sm" onclick="searchOptionImage(${idx})">SEARCH</button>`;
+}
+
+function renderOptionImageArea(idx) {
+  const opt = optionPlayers[idx];
+  if (opt.selectedImageUrl) {
+    return `<div style="padding:8px 0;">
+      <img src="${opt.selectedImageUrl}" alt="${opt.name}" style="height:200px;border-radius:12px;object-fit:cover;" onerror="this.style.display='none'" />
+    </div>`;
+  }
+  if (opt.wikiImage) {
+    return `<div style="padding:8px 0;">
+      <img src="${opt.wikiImage}" alt="${opt.name}" style="height:200px;border-radius:12px;object-fit:cover;" onerror="this.style.display='none'" />
+    </div>
+    <div id="google-grid-${idx}"></div>`;
+  }
+  if (opt.images && opt.images.length > 0) {
+    return renderOptionGoogleGrid(idx);
+  }
+  if (opt.images && opt.images.length === 0) {
+    return '<div class="image-loading">No images found. Try re-searching.</div>';
+  }
+  return '';
+}
+
+function renderOptionGoogleGrid(idx) {
+  const opt = optionPlayers[idx];
+  if (!opt.images || opt.images.length === 0) {
+    return '<div class="image-loading">No images found.</div>';
+  }
+  return `<div class="image-grid">
+    ${opt.images.map((img) => `
+      <div class="image-option" onclick="selectOptionImage(${idx}, '${encodeURIComponent(img.link)}')">
+        <img src="${img.thumbnailLink || img.link}" alt="${opt.name}" onerror="this.parentElement.innerHTML='Failed'" loading="lazy" />
+      </div>
+    `).join('')}
+  </div>`;
+}
+
+async function fetchWikiImage(playerName) {
+  const slug = playerName.replace(/ /g, '_');
+  try {
+    const resp = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(slug)}`);
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    if (data.originalimage && data.originalimage.source) return data.originalimage.source;
+    if (data.thumbnail && data.thumbnail.source) return data.thumbnail.source;
+    return null;
+  } catch (err) {
+    console.error('Wiki fetch failed for', playerName, err);
+    return null;
+  }
+}
+
+async function searchOptionImage(idx) {
+  const opt = optionPlayers[idx];
+  const areaEl = document.getElementById('option-image-area-' + idx);
+  areaEl.innerHTML = '<div class="image-loading">Searching Wikipedia...</div>';
+
+  const wikiUrl = await fetchWikiImage(opt.name);
+  if (wikiUrl) {
+    opt.wikiImage = wikiUrl;
+    opt.images = null;
+  } else {
+    opt.wikiImage = null;
+    areaEl.innerHTML = '<div class="image-loading">No Wikipedia image. Trying Google...</div>';
+    await googleSearchOption(idx);
+    return;
+  }
+
+  document.getElementById('option-actions-' + idx).innerHTML = renderOptionActions(idx);
+  areaEl.innerHTML = renderOptionImageArea(idx);
+}
+
+async function googleSearchOption(idx) {
+  const opt = optionPlayers[idx];
+  const areaEl = document.getElementById('option-image-area-' + idx);
+
+  const googleGridId = `google-grid-${idx}`;
+  let gridEl = document.getElementById(googleGridId);
+  if (!gridEl) {
+    areaEl.innerHTML += `<div id="${googleGridId}"></div>`;
+    gridEl = document.getElementById(googleGridId);
+  }
+  gridEl.innerHTML = '<div class="image-loading">Searching Google...</div>';
+
+  let searchTerm = 'basketball';
+  if (selectedSport === 'PREMIER LEAGUE') searchTerm = 'footballer';
+  if (selectedSport === 'NFL') searchTerm = 'american football';
+  if (selectedSport === 'MLB') searchTerm = 'baseball';
+  const query = `${opt.name} ${searchTerm}`;
+
+  try {
+    const url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CX}&q=${encodeURIComponent(query)}&searchType=image&num=10&imgSize=medium&safe=active`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    opt.images = (data.items || []).map(item => ({
+      link: item.link,
+      thumbnailLink: item.image?.thumbnailLink || item.link
+    }));
+  } catch (err) {
+    console.error('Google search failed:', err);
+    opt.images = [];
+  }
+
+  gridEl.innerHTML = renderOptionGoogleGrid(idx);
+  document.getElementById('option-actions-' + idx).innerHTML = renderOptionActions(idx);
+}
+
+function acceptOptionWiki(idx) {
+  const opt = optionPlayers[idx];
+  if (!opt.wikiImage) return;
+  opt.selectedImageUrl = opt.wikiImage;
+
+  document.getElementById('option-row-' + idx).classList.add('done');
+  document.getElementById('option-actions-' + idx).innerHTML = renderOptionActions(idx);
+  document.getElementById('option-image-area-' + idx).innerHTML = renderOptionImageArea(idx);
+  updateImageProgress();
+}
+
+function selectOptionImage(idx, encodedUrl) {
+  optionPlayers[idx].selectedImageUrl = decodeURIComponent(encodedUrl);
+
+  document.getElementById('option-row-' + idx).classList.add('done');
+  document.getElementById('option-actions-' + idx).innerHTML = renderOptionActions(idx);
+  document.getElementById('option-image-area-' + idx).innerHTML = renderOptionImageArea(idx);
+  updateImageProgress();
+}
+
+function changeOptionImage(idx) {
+  optionPlayers[idx].selectedImageUrl = null;
+
+  document.getElementById('option-row-' + idx).classList.remove('done');
+  document.getElementById('option-actions-' + idx).innerHTML = renderOptionActions(idx);
+  document.getElementById('option-image-area-' + idx).innerHTML = renderOptionImageArea(idx);
+  updateImageProgress();
+}
+
+async function searchAllOptions() {
+  const btn = document.getElementById('searchAllBtn');
+  const status = document.getElementById('searchAllStatus');
+  btn.disabled = true;
+  btn.textContent = 'SEARCHING...';
+
+  for (let i = 0; i < optionPlayers.length; i++) {
+    if (optionPlayers[i].selectedImageUrl) continue;
+    status.textContent = `${i + 1} / ${optionPlayers.length}...`;
+    await searchOptionImage(i);
+    if (optionPlayers[i].wikiImage && !optionPlayers[i].selectedImageUrl) {
+      acceptOptionWiki(i);
+    }
+    if (i < optionPlayers.length - 1) {
+      await new Promise(r => setTimeout(r, 300));
+    }
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'SEARCH ALL';
+  const selected = optionPlayers.filter(p => p.selectedImageUrl).length;
+  status.textContent = `Done! ${selected}/${optionPlayers.length} images found.`;
+  setTimeout(() => { status.textContent = ''; }, 3000);
+}
+
+function convertWikiUrl(url) {
+  if (url.includes('upload.wikimedia.org/wikipedia/commons/') && !url.includes('/thumb/')) {
+    const parts = url.split('/commons/');
+    const path = parts[1];
+    const filename = path.split('/').pop();
+    return parts[0] + '/commons/thumb/' + path + '/600px-' + filename;
+  }
+  return url;
+}
+
+function updateImageProgress() {
+  const selected = optionPlayers.filter(p => p.selectedImageUrl).length;
+  const total = optionPlayers.length;
+  const pct = total > 0 ? (selected / total * 100) : 0;
+
+  document.getElementById('imageProgress').style.width = pct + '%';
+  document.getElementById('imagesReadyBtn').disabled = selected < total;
+
+  if (selected === total && total > 0) {
+    buildDownloadScript();
+  }
+}
+
+function buildDownloadScript() {
+  const lines = [
+    'cd /Users/paultaylor/Projects/remotion/sports-trivia-promo',
+    'mkdir -p public/episodes',
+    '',
+  ];
+
+  optionPlayers.forEach(opt => {
+    const file = `public/episodes/${opt.filename}`;
+    const safeUrl = convertWikiUrl(opt.selectedImageUrl || '').replace(/"/g, '\\"');
+    lines.push(`curl -sL -H "User-Agent: Mozilla/5.0 (Macintosh)" -o "${file}" "${safeUrl}"`);
+    lines.push(`sips -s format png "${file}" --out "${file}" 2>/dev/null`);
+    lines.push('sleep 1');
+  });
+
+  lines.push('');
+  lines.push('echo ""');
+  lines.push('echo "Verifying images..."');
+  lines.push('for f in public/episodes/option*-image.png; do');
+  lines.push('  SIZE=$(wc -c < "$f")');
+  lines.push('  if [ "$SIZE" -lt 5000 ]; then');
+  lines.push('    echo "  ✗ $f — FAILED"');
+  lines.push('  else');
+  lines.push('    echo "  ✓ $f — OK"');
+  lines.push('  fi');
+  lines.push('done');
+
+  document.getElementById('downloadCmd').innerText = lines.join('\n');
 }
 
 async function generateCaptions() {

@@ -257,7 +257,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0;
+  gap: 40px;
 }
 
 .hero-text {

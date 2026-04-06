@@ -967,7 +967,7 @@ body {
 .modes-grid .mode-card:nth-child(4) { transition-delay: 0.24s; }
 .modes-grid .mode-card:nth-child(5) { transition-delay: 0.32s; }
 .modes-grid .mode-card:nth-child(6) { transition-delay: 0.40s; }
-.modes-grid .mode-card:nth-child(7) { transition-delay: 0.48s; }
+.modes-grid .mode-card:nth-child(7) { transition-delay: 0.48s; grid-column: 2; }
 
 /* ========== Page Content (legal pages) ========== */
 .page-content {

@@ -256,13 +256,14 @@ body {
 .hero-split {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0;
 }
 
 .hero-text {
-  flex: 1;
+  flex: 0 1 auto;
   min-width: 0;
-  padding-left: 24px;
+  max-width: 540px;
 }
 
 .hero-title {
